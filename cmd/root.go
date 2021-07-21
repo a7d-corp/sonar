@@ -17,8 +17,8 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"github.com/spf13/cobra"
+	"os"
 
 	"github.com/spf13/viper"
 )
@@ -28,13 +28,12 @@ var cfgFile string
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "sonar",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Short: "Sonar is a tool for deploying a standalone debugging container to a Kubernetes cluster ",
+	Long: `Sonar is used to create a Kubernetes deployment with a debug
+container for troubleshooting cluster issues.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+The deployment can be customised to a certain extent in
+order to suit the target cluster configuration.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
