@@ -15,7 +15,7 @@ limitations under the License.
 */
 package main
 
-import "sonar/cmd"
+import "github.com/glitchcrab/sonar/cmd"
 
 func main() {
 	cmd.Execute()
