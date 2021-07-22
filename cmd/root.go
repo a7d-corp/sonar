@@ -51,7 +51,7 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.sonar.yaml)")
 	rootCmd.PersistentFlags().StringVar(&name, "name", "debug", "deployment name")
-	rootCmd.PersistentFlags().StringVar(&namespace, "name", "default", "namespace")
+	rootCmd.PersistentFlags().StringVar(&namespace, "namespace", "default", "namespace")
 }
 
 // initConfig reads in config file and ENV variables if set.
