@@ -23,21 +23,21 @@ import (
 	"github.com/spf13/viper"
 )
 
-var cfgFile string
+var (
+	cfgFile string
+	name    string
 
-// rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:   "sonar",
-	Short: "Sonar is a tool for deploying a standalone debugging container to a Kubernetes cluster ",
-	Long: `Sonar is used to create a Kubernetes deployment with a debug
+	// rootCmd represents the base command when called without any subcommands
+	rootCmd = &cobra.Command{
+		Use:   "sonar",
+		Short: "Sonar is a tool for deploying a standalone debugging container to a Kubernetes cluster.",
+		Long: `Sonar is used to create a Kubernetes deployment with a debug
 container for troubleshooting cluster issues.
 
 The deployment can be customised to a certain extent in
 order to suit the target cluster configuration.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
-}
+	}
+)
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
