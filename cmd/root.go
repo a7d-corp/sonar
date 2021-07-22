@@ -24,8 +24,9 @@ import (
 )
 
 var (
-	cfgFile string
-	name    string
+	cfgFile   string
+	name      string
+	namespace string
 
 	// rootCmd represents the base command when called without any subcommands
 	rootCmd = &cobra.Command{
@@ -50,6 +51,7 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.sonar.yaml)")
 	rootCmd.PersistentFlags().StringVar(&name, "name", "debug", "deployment name")
+	rootCmd.PersistentFlags().StringVar(&namespace, "name", "default", "namespace")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -71,6 +73,11 @@ func initConfig() {
 	//  default the deployment name if it wasn't provided.
 	if name == "" {
 		name = "debug"
+	}
+
+	//  default the namespace if it wasn't provided.
+	if namespace == "" {
+		namespace = "default"
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
