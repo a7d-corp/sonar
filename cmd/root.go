@@ -48,15 +48,8 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.sonar.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().StringVar(&name, "name", "debug", "deployment name")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -73,6 +66,11 @@ func initConfig() {
 		viper.AddConfigPath(home)
 		viper.SetConfigType("yaml")
 		viper.SetConfigName(".sonar")
+	}
+
+	//  default the deployment name if it wasn't provided.
+	if name == "" {
+		name = "debug"
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
