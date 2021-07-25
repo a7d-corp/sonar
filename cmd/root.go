@@ -16,11 +16,8 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
+	_ "fmt"
 	"github.com/spf13/cobra"
-	"os"
-
-	"github.com/spf13/viper"
 )
 
 var (
@@ -49,27 +46,11 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.sonar.yaml)")
 	rootCmd.PersistentFlags().StringVar(&name, "name", "debug", "deployment name")
 	rootCmd.PersistentFlags().StringVar(&namespace, "namespace", "default", "namespace")
 }
 
-// initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Find home directory.
-		home, err := os.UserHomeDir()
-		cobra.CheckErr(err)
-
-		// Search config in home directory with name ".sonar" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigType("yaml")
-		viper.SetConfigName(".sonar")
-	}
-
 	//  default the deployment name if it wasn't provided.
 	if name == "" {
 		name = "debug"
@@ -78,12 +59,5 @@ func initConfig() {
 	//  default the namespace if it wasn't provided.
 	if namespace == "" {
 		namespace = "default"
-	}
-
-	//viper.AutomaticEnv() // read in environment variables that match
-
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 	}
 }
