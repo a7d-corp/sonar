@@ -47,10 +47,10 @@ then the 'latest' tag is automatically used.`,
 func init() {
 	rootCmd.AddCommand(createCmd)
 
-	createCmd.Flags().StringVarP(&image, "image", "i", "", "image name (e.g. glitchcrab/ubuntu-debug)")
-	createCmd.Flags().BoolVar(&networkPolicy, "network-policy", false, "create NetworkPolicy (default false)")
-	createCmd.Flags().BoolVar(&podSecurityPolicy, "podsecuritypolicy", false, "create PodSecurityPolicy (default false)")
-	createCmd.Flags().BoolVar(&privileged, "privileged", false, "run the container as root (assumes userID of 0) (default false)")
+	createCmd.Flags().StringVarP(&image, "image", "i", "busybox", "image name (e.g. glitchcrab/ubuntu-debug:latest)")
+	createCmd.Flags().BoolVar(&networkPolicy, "network-policy", false, "create NetworkPolicy (default \"false\")")
+	createCmd.Flags().BoolVar(&podSecurityPolicy, "podsecuritypolicy", false, "create PodSecurityPolicy (default \"false\")")
+	createCmd.Flags().BoolVar(&privileged, "privileged", false, "run the container as root (assumes userID of 0) (default \"false\")")
 }
 
 func validateFlags(cmd *cobra.Command, args []string) {
