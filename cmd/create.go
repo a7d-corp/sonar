@@ -30,13 +30,15 @@ var (
 
 	createCmd = &cobra.Command{
 		Use:   "create",
-		Short: "A brief description of your command",
-		Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+		Short: "create will deploy a debug container to the current context",
+		Long: `Create will create a debugging deployment and all supporting resources to
+the provided kubectl context (or the current context if none is provided).
+Sonar assumes that your context has the required privileges.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+All flags are optional as sane defaults are provided.
+
+Image names may be provided with or without a tag; if no tag is detected
+then the 'latest' tag is automatically used.`,
 		PreRun: validateFlags,
 		Run:    createSonarDeployment,
 	}
