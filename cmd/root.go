@@ -32,6 +32,7 @@ const (
 
 var (
 	cfgFile   string
+	context   string
 	name      string
 	namespace string
 
@@ -56,6 +57,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
+	rootCmd.PersistentFlags().StringVar(&context, "context", "", "kubectl context to use")
 	rootCmd.PersistentFlags().StringVar(&name, "name", "debug", "deployment name (max 50 characters)")
 	rootCmd.PersistentFlags().StringVar(&namespace, "namespace", "default", "namespace")
 }
