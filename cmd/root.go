@@ -16,8 +16,12 @@ limitations under the License.
 package cmd
 
 import (
-	_ "fmt"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+)
+
+const (
+	nameStub = "sonar"
 )
 
 var (
@@ -51,13 +55,20 @@ func init() {
 }
 
 func initConfig() {
-	//  default the deployment name if it wasn't provided.
-	if name == "" {
-		name = "debug"
+	// If the user hasn't provided a deployment name then inform them that
+	// we are using the default. Else we validate that the name looks sane.
+	if !rootCmd.PersistentFlags().Lookup("name").Changed {
+		log.Infof("No name provided; defaulting name to: %s-%s", nameStub, name)
+	} else {
+		// validate provided name
+		// max 253 chars, only alphanumeric, -. only, start/end alphanumeric
 	}
 
-	//  default the namespace if it wasn't provided.
-	if namespace == "" {
-		namespace = "default"
+	// If the user hasn't provided a deployment namespace then inform them that
+	// we are using the default. Else we validate that the namespace looks sane.
+	if !rootCmd.PersistentFlags().Lookup("namespace").Changed {
+		log.Infof("No namespace provided, deploying to: %s", namespace)
+	} else {
+		// validate provided namespace
 	}
 }
