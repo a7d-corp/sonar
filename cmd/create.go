@@ -36,7 +36,8 @@ and usage of using your command. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-		Run: createSonarDeployment,
+		PreRun: validateFlags,
+		Run:    createSonarDeployment,
 	}
 )
 
@@ -47,6 +48,12 @@ func init() {
 	createCmd.Flags().BoolVar(&networkPolicy, "network-policy", false, "create NetworkPolicy (default false)")
 	createCmd.Flags().BoolVar(&podSecurityPolicy, "podsecuritypolicy", false, "create PodSecurityPolicy (default false)")
 	createCmd.Flags().BoolVar(&privileged, "privileged", false, "run the container as root (assumes userID of 0) (default false)")
+}
+
+func validateFlags(cmd *cobra.Command, args []string) {
+	if image == "" {
+		fmt.Println("--image must not be empty")
+	}
 }
 
 func createSonarDeployment(cmd *cobra.Command, args []string) {
