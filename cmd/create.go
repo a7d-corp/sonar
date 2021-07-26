@@ -35,10 +35,11 @@ var (
 
 	createCmd = &cobra.Command{
 		Use:   "create",
-		Short: "create will deploy a debug container to the current context",
-		Long: `Create will create a debugging deployment and all supporting resources to
+		Short: "create applies a debug deployment to a Kubernetes cluster",
+		Long: `create will create a debugging deployment and all supporting resources to
 the provided kubectl context (or the current context if none is provided).
-Sonar assumes that your context has the required privileges.
+Sonar assumes that your context has the required privileges to create the
+necessary resources.
 
 All flags are optional as sane defaults are provided.
 
