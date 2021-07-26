@@ -18,6 +18,7 @@ package cmd
 import (
 	"fmt"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -52,7 +53,7 @@ func init() {
 
 func validateFlags(cmd *cobra.Command, args []string) {
 	if image == "" {
-		fmt.Println("--image must not be empty")
+		log.Fatal("Image name for debugging container must be provided")
 	}
 }
 
