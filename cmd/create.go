@@ -17,9 +17,14 @@ package cmd
 
 import (
 	"fmt"
+	"regexp"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+)
+
+const (
+	imageRegex = "^[a-z0-9/.-]*[:][a-z0-9.-]*$"
 )
 
 var (
@@ -39,23 +44,33 @@ All flags are optional as sane defaults are provided.
 
 Image names may be provided with or without a tag; if no tag is detected
 then the 'latest' tag is automatically used.`,
-		PreRun: validateFlags,
-		Run:    createSonarDeployment,
+		Run: createSonarDeployment,
 	}
 )
 
 func init() {
 	rootCmd.AddCommand(createCmd)
+	cobra.OnInitialize(validateFlags)
 
-	createCmd.Flags().StringVarP(&image, "image", "i", "busybox", "image name (e.g. glitchcrab/ubuntu-debug:latest)")
+	createCmd.Flags().StringVarP(&image, "image", "i", "busybox:latest", "image name (e.g. glitchcrab/ubuntu-debug:latest)")
 	createCmd.Flags().BoolVar(&networkPolicy, "network-policy", false, "create NetworkPolicy (default \"false\")")
 	createCmd.Flags().BoolVar(&podSecurityPolicy, "podsecuritypolicy", false, "create PodSecurityPolicy (default \"false\")")
 	createCmd.Flags().BoolVar(&privileged, "privileged", false, "run the container as root (assumes userID of 0) (default \"false\")")
 }
 
-func validateFlags(cmd *cobra.Command, args []string) {
-	if image == "" {
-		log.Fatal("Image name for debugging container must be provided")
+func validateFlags() {
+	// If the user hasn't provided an image name then inform them that
+	// we are using the default. Else we validate the image tag.
+	if !createCmd.Flags().Lookup("image").Changed {
+		log.Infof("No image name provided, using: %s", image)
+	} else {
+		// Validate image to see if a tag has been provided; if not then
+		// use latest. Does not validate full image name, just whether a
+		// tag was provided.
+		ok, _ := regexp.MatchString(imageRegex, image)
+		if !ok {
+			image = fmt.Sprintf("%s:latest", image)
+		}
 	}
 }
 
