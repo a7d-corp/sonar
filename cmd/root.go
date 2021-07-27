@@ -31,10 +31,10 @@ const (
 )
 
 var (
-	cfgFile   string
-	context   string
-	name      string
-	namespace string
+	kubeConfig  string
+	kubeContext string
+	name        string
+	namespace   string
 
 	// rootCmd represents the base command when called without any subcommands
 	rootCmd = &cobra.Command{
@@ -57,7 +57,8 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVar(&context, "context", "", "kubectl context to use")
+	rootCmd.PersistentFlags().StringVar(&kubeConfig, "kube-config", "$HOME/.kube/config", "absolute path to kubeconfig file")
+	rootCmd.PersistentFlags().StringVar(&kubeContext, "kube-context", "", "kubectl context to use")
 	rootCmd.PersistentFlags().StringVar(&name, "name", "debug", "deployment name (max 50 characters)")
 	rootCmd.PersistentFlags().StringVar(&namespace, "namespace", "default", "namespace")
 }
