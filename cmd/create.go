@@ -78,11 +78,8 @@ func validateFlags() {
 }
 
 func createSonarDeployment(cmd *cobra.Command, args []string) {
-	fmt.Printf("name: %s\n", name)
-	fmt.Printf("namespace: %s\n", namespace)
-	fmt.Printf("image: %s\n", image)
 
-	k8sclient, err := k8sclient.New(kubeContext, &kubeConfig)
+	k8sclient, err := k8sclient.New(kubeContext, kubeConfig)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -25,18 +25,18 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func New(kubeContext string, kubeConfig *string) (kubernetes.Interface, error) {
+func New(kubeContext, kubeConfig string) (kubernetes.Interface, error) {
 	// Set the kubeconfig to the default location if the path
 	// wasn't provided.
-	if *kubeConfig == "" {
+	if kubeConfig == "" {
 		if home := homedir.HomeDir(); home != "" {
-			*kubeConfig = filepath.Join(home, ".kube", "config")
+			kubeConfig = filepath.Join(home, ".kube", "config")
 		}
 	}
 
 	// TODO: implement switching to provided context name
 
-	config, err := clientcmd.BuildConfigFromFlags("", *kubeConfig)
+	config, err := clientcmd.BuildConfigFromFlags("", kubeConfig)
 	if err != nil {
 		log.Fatal(err)
 	}
