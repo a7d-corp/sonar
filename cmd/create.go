@@ -97,4 +97,13 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// Create a context
+	ctx := context.TODO()
+
+	// Create a ServiceAccount
+	_, err = k8sresource.NewServiceAccount(k8sClientSet, ctx, sonarConfig)
+	if err != nil {
+		log.Info(err)
+	}
 }
