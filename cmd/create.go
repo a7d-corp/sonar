@@ -92,7 +92,8 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 		Privileged:        privileged,
 	}
 
-	k8sclient, err := k8sclient.New(kubeContext, kubeConfig)
+	// Create a clientset to interact with the cluster.
+	k8sClientSet, err := k8sclient.New(kubeContext, kubeConfig)
 	if err != nil {
 		log.Fatal(err)
 	}
