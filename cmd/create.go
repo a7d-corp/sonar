@@ -16,11 +16,13 @@ limitations under the License.
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 
+	"github.com/glitchcrab/sonar/pkg/sonarconfig"
 	"github.com/glitchcrab/sonar/service/k8sclient"
-
+	"github.com/glitchcrab/sonar/service/k8sresource"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -34,6 +36,7 @@ var (
 	networkPolicy     bool
 	podSecurityPolicy bool
 	privileged        bool
+	sonarConfig       sonarconfig.SonarConfig
 
 	createCmd = &cobra.Command{
 		Use:   "create",
@@ -78,6 +81,16 @@ func validateFlags() {
 }
 
 func createSonarDeployment(cmd *cobra.Command, args []string) {
+	// Create a SonarConfig
+	sonarConfig := sonarconfig.SonarConfig{
+		Image:             image,
+		Labels:            labels,
+		Name:              name,
+		Namespace:         namespace,
+		NetworkPolicy:     networkPolicy,
+		PodSecurityPolicy: podSecurityPolicy,
+		Privileged:        privileged,
+	}
 
 	k8sclient, err := k8sclient.New(kubeContext, kubeConfig)
 	if err != nil {
