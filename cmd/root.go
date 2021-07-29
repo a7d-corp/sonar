@@ -33,8 +33,12 @@ const (
 var (
 	kubeConfig  string
 	kubeContext string
-	name        string
-	namespace   string
+	labels      = map[string]string{
+		"created-by": "sonar",
+		"owner":      "sonar",
+	}
+	name      string
+	namespace string
 
 	// rootCmd represents the base command when called without any subcommands
 	rootCmd = &cobra.Command{
