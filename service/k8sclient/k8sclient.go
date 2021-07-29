@@ -25,7 +25,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func New(kubeContext, kubeConfig string) (kubernetes.Interface, error) {
+func New(kubeContext, kubeConfig string) (*kubernetes.Clientset, error) {
 	// Set the kubeconfig to the default location if the path
 	// wasn't provided.
 	if kubeConfig == "" {
@@ -41,10 +41,10 @@ func New(kubeContext, kubeConfig string) (kubernetes.Interface, error) {
 		log.Fatal(err)
 	}
 
-	clientset, err := kubernetes.NewForConfig(config)
+	k8sClientSet, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return clientset, err
+	return k8sClientSet, err
 }
