@@ -105,9 +105,9 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 		// Create a ServiceAccount
 		err := k8sresource.NewServiceAccount(k8sClientSet, ctx, sonarConfig)
 		if err != nil {
-			log.Warnf("ServiceAccount %s/%s was not created: %w\n", sonarConfig.Namespace, sonarConfig.Name, err)
+			log.Warnf("ServiceAccount \"'%s/%s\" was not created: %w\n", sonarConfig.Namespace, sonarConfig.Name, err)
 		} else {
-			log.Infof("ServiceAccount %s/%s created\n", sonarConfig.Namespace, sonarConfig.Name)
+			log.Infof("ServiceAccount \"%s/%s\" created\n", sonarConfig.Namespace, sonarConfig.Name)
 		}
 	}
 
@@ -116,9 +116,9 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 			// Create a PodSecurityPolicy
 			err := k8sresource.NewPodSecurityPolicy(k8sClientSet, ctx, sonarConfig)
 			if err != nil {
-				log.Warnf("PodSecurityPolicy %s was not created: %w\n", sonarConfig.Name, err)
+				log.Warnf("PodSecurityPolicy \"%s\" was not created: %w\n", sonarConfig.Name, err)
 			} else {
-				log.Infof("PodSecurityPolicy %s created\n", sonarConfig.Name)
+				log.Infof("PodSecurityPolicy \"%s\" created\n", sonarConfig.Name)
 			}
 		}
 
@@ -126,9 +126,9 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 			// Create a ClusterRole
 			err := k8sresource.NewClusterRole(k8sClientSet, ctx, sonarConfig)
 			if err != nil {
-				log.Warnf("ClusterRole %s was not created: %w\n", sonarConfig.Name, err)
+				log.Warnf("ClusterRole \"%s\" was not created: %w\n", sonarConfig.Name, err)
 			} else {
-				log.Infof("ClusterRole %s created\n", sonarConfig.Name)
+				log.Infof("ClusterRole \"%s\" created\n", sonarConfig.Name)
 			}
 		}
 
@@ -136,9 +136,9 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 			// Create a ClusterRoleBinding
 			err := k8sresource.NewClusterRoleBinding(k8sClientSet, ctx, sonarConfig)
 			if err != nil {
-				log.Warnf("ClusterRoleBinding %s was not created: %w\n", sonarConfig.Name, err)
+				log.Warnf("ClusterRoleBinding \"%s\" was not created: %w\n", sonarConfig.Name, err)
 			} else {
-				log.Infof("ClusterRoleBinding %s created\n", sonarConfig.Name)
+				log.Infof("ClusterRoleBinding \"%s\" created\n", sonarConfig.Name)
 			}
 		}
 	}
@@ -147,9 +147,9 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 		// Create a NetworkPolicy
 		err := k8sresource.NewNetworkPolicy(k8sClientSet, ctx, sonarConfig)
 		if err != nil {
-			log.Warnf("NetworkPolicy %s was not created: %w\n", sonarConfig.Name, err)
+			log.Warnf("NetworkPolicy \"%s\" was not created: %w\n", sonarConfig.Name, err)
 		} else {
-			log.Infof("NetworkPolicy %s created\n", sonarConfig.Name)
+			log.Infof("NetworkPolicy \"%s\" created\n", sonarConfig.Name)
 		}
 	}
 
@@ -157,9 +157,9 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 		// Create a Deployment
 		err := k8sresource.NewDeployment(k8sClientSet, ctx, sonarConfig)
 		if err != nil {
-			log.Warnf("Deployment %s/%s was not created: %w\n", sonarConfig.Namespace, sonarConfig.Name, err)
+			log.Warnf("Deployment \"%s/%s\" was not created: %w\n", sonarConfig.Namespace, sonarConfig.Name, err)
 		} else {
-			log.Infof("Deployment %s/%s created\n", sonarConfig.Namespace, sonarConfig.Name)
+			log.Infof("Deployment \"%s/%s\" created\n", sonarConfig.Namespace, sonarConfig.Name)
 		}
 	}
 }
