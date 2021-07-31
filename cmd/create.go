@@ -61,7 +61,7 @@ func init() {
 	cobra.OnInitialize(validateFlags)
 
 	createCmd.Flags().StringVarP(&image, "image", "i", "busybox:latest", "image name (e.g. glitchcrab/ubuntu-debug:latest)")
-	createCmd.Flags().BoolVar(&networkPolicy, "network-policy", false, "create NetworkPolicy (default \"false\")")
+	createCmd.Flags().BoolVar(&networkPolicy, "networkpolicy", false, "create NetworkPolicy (default \"false\")")
 	createCmd.Flags().BoolVar(&podSecurityPolicy, "podsecuritypolicy", false, "create PodSecurityPolicy (default \"false\")")
 	createCmd.Flags().BoolVar(&privileged, "privileged", false, "run the container as root (assumes userID of 0) (default \"false\")")
 }
