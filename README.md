@@ -4,15 +4,5 @@ Sonar is a tool for deploying a standalone debugging container to a Kubernetes c
 
 ## Configuration
 
-Sonar accepts configuration either via flags or a file. Flags have a higher priority.
-
-Example config file:
-
-```yaml
-image: glitchcrab/ubuntu-debug:latest
-name: debug
-namespace: default
-networkpolicy: true
-podsecuritypolicy: true
-privileged: false
-```
+Currently, Sonar accepts configuration either via flags. The ability to provide a config
+file will be added at a later date.
