@@ -25,8 +25,8 @@ import (
 )
 
 var (
-	minRunAsID = 2
-	maxRunAsID = 65535
+	minRunAsID int64 = 2
+	maxRunAsID int64 = 65535
 )
 
 func NewPodSecurityPolicy(k8sClientSet *kubernetes.Clientset, ctx context.Context, sonarConfig sonarconfig.SonarConfig) (err error) {
@@ -47,37 +47,44 @@ func NewPodSecurityPolicy(k8sClientSet *kubernetes.Clientset, ctx context.Contex
 		},
 		Spec: policyv1beta1.PodSecurityPolicySpec{
 			AllowPrivilegeEscalation: &sonarConfig.Privileged,
-			//FSGroup:                  []policyv1beta1.FSGroupStrategyOptions{
-			//Rule: FSGroupStrategyMustRunAs,
-			//Ranges: []policyv1beta1.IDRange{
-			//	Min: 2,
-			//	Max: 65535,
-			//},
-			//},
-			HostIPC:     false,
-			HostNetwork: false,
-			HostPID:     false,
-			Privileged:  sonarConfig.Privileged,
-			//RunAsGroup: []policyv1beta1.RunAsGroupStrategyOptions{
-			//	Rule: RunAsGroupStrategyMayRunAs,
-			//	Ranges: []policyv1beta1.IDRange{
-			//		Min: 2,
-			//		Max: 65535,
-			//	},
-			//},
-			//RunAsUser: []policyv1beta1.RunAsUserStrategyOptions{
-			//	Rule: RunAsUserStrategyMustRunAs,
-			//	Ranges: []policyv1beta1.IDRange{
-			//		Min: 2,
-			//		Max: 65535,
-			//	},
-			//},
-			//SELinux: []policyv1beta1.SELinuxStrategyOptions{
-			//	Rule: SELinuxStrategyRunAsAny,
-			//},
-			//SupplementalGroups: []policyv1beta1.SupplementalGroupsStrategyOptions{
-			//	Rule: SupplementalGroupsStrategyRunAsAny,
-			//},
+			FSGroup: policyv1beta1.FSGroupStrategyOptions{
+				Rule: policyv1beta1.FSGroupStrategyMustRunAs,
+				Ranges: []policyv1beta1.IDRange{
+					{
+						Min: minRunAsID,
+						Max: maxRunAsID,
+					},
+				},
+			},
+			HostIPC:                false,
+			HostNetwork:            false,
+			HostPID:                false,
+			Privileged:             sonarConfig.Privileged,
+			ReadOnlyRootFilesystem: false,
+			RunAsGroup: &policyv1beta1.RunAsGroupStrategyOptions{
+				Rule: policyv1beta1.RunAsGroupStrategyMustRunAs,
+				Ranges: []policyv1beta1.IDRange{
+					{
+						Min: minRunAsID,
+						Max: maxRunAsID,
+					},
+				},
+			},
+			RunAsUser: policyv1beta1.RunAsUserStrategyOptions{
+				Rule: policyv1beta1.RunAsUserStrategyMustRunAs,
+				Ranges: []policyv1beta1.IDRange{
+					{
+						Min: minRunAsID,
+						Max: maxRunAsID,
+					},
+				},
+			},
+			SELinux: policyv1beta1.SELinuxStrategyOptions{
+				Rule: policyv1beta1.SELinuxStrategyRunAsAny,
+			},
+			SupplementalGroups: policyv1beta1.SupplementalGroupsStrategyOptions{
+				Rule: policyv1beta1.SupplementalGroupsStrategyRunAsAny,
+			},
 			Volumes: []policyv1beta1.FSType{
 				"*",
 			},
