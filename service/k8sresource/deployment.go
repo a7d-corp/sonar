@@ -21,15 +21,21 @@ import (
 	"github.com/glitchcrab/sonar/pkg/sonarconfig"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
 var (
-	replicas int32 = 1
+	replicas  int32 = 1
+	runAsUser int64 = 1000
 )
 
 func NewDeployment(k8sClientSet *kubernetes.Clientset, ctx context.Context, sonarConfig sonarconfig.SonarConfig) (err error) {
+	if sonarConfig.PodUser != nil {
+		runAsUser = sonarConfig.PodUser
+	}
+
 	// Define the Deployment
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -49,9 +55,24 @@ func NewDeployment(k8sClientSet *kubernetes.Clientset, ctx context.Context, sona
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
 						{
-							Name:  "sonar",
 							Image: sonarConfig.Image,
+							Name:  "sonar",
+							Resources: corev1.ResourceRequirements{
+								Limits: corev1.ResourceList{
+									corev1.ResourceCPU:    resource.MustParse("2"),
+									corev1.ResourceMemory: resource.MustParse("250Mi"),
+								},
+								Requests: corev1.ResourceList{
+									corev1.ResourceCPU:    resource.MustParse("200m"),
+									corev1.ResourceMemory: resource.MustParse("50Mi"),
+								},
+							},
 						},
+					},
+					RestartPolicy:      corev1.RestartPolicyAlways,
+					ServiceAccountName: sonarConfig.Name,
+					SecurityContext: &corev1.PodSecurityContext{
+						RunAsUser: &runAsUser,
 					},
 				},
 			},
