@@ -61,7 +61,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVar(&kubeConfig, "kube-config", "", "absolute path to kubeconfig file (default: '$HOME/.kube/config'")
+	rootCmd.PersistentFlags().StringVar(&kubeConfig, "kube-config", "", "absolute path to kubeconfig file (default: '$HOME/.kube/config')")
 	rootCmd.PersistentFlags().StringVar(&kubeContext, "kube-context", "", "kubectl context to use")
 	rootCmd.PersistentFlags().StringVar(&name, "name", "debug", "deployment name (max 50 characters)")
 	rootCmd.PersistentFlags().StringVar(&namespace, "namespace", "default", "namespace")
