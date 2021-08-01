@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/glitchcrab/sonar/pkg/sonarconfig"
+	"github.com/glitchcrab/sonar/internal/sonarconfig"
 	"github.com/glitchcrab/sonar/service/k8sclient"
 	"github.com/glitchcrab/sonar/service/k8sresource"
 	log "github.com/sirupsen/logrus"
