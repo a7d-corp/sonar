@@ -32,7 +32,7 @@ var (
 )
 
 func NewDeployment(k8sClientSet *kubernetes.Clientset, ctx context.Context, sonarConfig sonarconfig.SonarConfig) (err error) {
-	if sonarConfig.PodUser != nil {
+	if sonarConfig.PodUser != 0 {
 		runAsUser = sonarConfig.PodUser
 	}
 
