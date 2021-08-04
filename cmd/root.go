@@ -68,11 +68,8 @@ func init() {
 }
 
 func initConfig() {
-	// If the user hasn't provided a deployment name then inform them that
-	// we are using the default. Else we validate that the name looks sane.
-	if !rootCmd.PersistentFlags().Lookup("name").Changed {
-		log.Infof("No name provided; defaulting name to: %s-%s", nameStub, name)
-	} else {
+	// If the user has provided a name then validate that it looks sane.
+	if rootCmd.PersistentFlags().Lookup("name").Changed {
 		// Restrict deployment name to 50 characters. 50 is a relatively
 		// arbitrary choice of length, but it should be sufficient.
 		if len(name) > nameMaxLength {
@@ -89,11 +86,8 @@ func initConfig() {
 	// Prepend provided name with 'sonar-' for ease of identifying Sonar deployments.
 	name = fmt.Sprintf("%s-%s", nameStub, name)
 
-	// If the user hasn't provided a deployment namespace then inform them that
-	// we are using the default. Else we validate that the namespace looks sane.
-	if !rootCmd.PersistentFlags().Lookup("namespace").Changed {
-		log.Infof("No namespace provided, deploying to: %s", namespace)
-	} else {
+	// If the user has provided a namespace then validate that it looks sane.
+	if rootCmd.PersistentFlags().Lookup("namespace").Changed {
 		// Validate the provided namespace is suitable for a Kubernetes namespace.
 		ok, _ := regexp.MatchString(namespaceRegex, namespace)
 		if !ok {

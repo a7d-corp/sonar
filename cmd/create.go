@@ -66,11 +66,8 @@ func init() {
 }
 
 func validateFlags() {
-	// If the user hasn't provided an image name then inform them that
-	// we are using the default. Else we validate the image tag.
-	if !createCmd.Flags().Lookup("image").Changed {
-		log.Infof("No image name provided, using: %s", image)
-	} else {
+	// If the user has provided an image name then validate that it looks sane.
+	if createCmd.Flags().Lookup("image").Changed {
 		// Validate image to see if a tag has been provided; if not then
 		// use latest. Does not validate full image name, just whether a
 		// tag was provided.
