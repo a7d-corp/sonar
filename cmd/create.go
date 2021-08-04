@@ -42,7 +42,7 @@ var (
 	createCmd = &cobra.Command{
 		Use:   "create",
 		Short: "create applies a debug deployment to a Kubernetes cluster",
-		Long: `Create will attempt to create a debugging deployment and all supporting
+		Long: `create will attempt to create a debugging deployment and all supporting
 resources in the provided kubectl context (or the current context if
 none is provided). Sonar assumes that your context has the required
 privileges to create the necessary resources.
@@ -104,11 +104,11 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 		err := k8sresource.NewServiceAccount(k8sClientSet, ctx, sonarConfig)
 		// Handle the response
 		if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {
-			log.Warnf("ServiceAccount \"%s/%s\" already exists\n", sonarConfig.Namespace, sonarConfig.Name)
+			log.Warnf("serviceaccount \"%s/%s\" already exists\n", sonarConfig.Namespace, sonarConfig.Name)
 		} else if err != nil {
-			log.Warnf("ServiceAccount \"%s/%s\" was not created: %w\n", sonarConfig.Namespace, sonarConfig.Name, err)
+			log.Warnf("serviceaccount \"%s/%s\" was not created: %w\n", sonarConfig.Namespace, sonarConfig.Name, err)
 		} else {
-			log.Infof("ServiceAccount \"%s/%s\" created\n", sonarConfig.Namespace, sonarConfig.Name)
+			log.Infof("serviceaccount \"%s/%s\" created\n", sonarConfig.Namespace, sonarConfig.Name)
 		}
 	}
 
@@ -118,11 +118,11 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 			err := k8sresource.NewPodSecurityPolicy(k8sClientSet, ctx, sonarConfig)
 			// Handle the response
 			if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {
-				log.Warnf("PodSecurityPolicy \"%s\" already exists\n", sonarConfig.Name)
+				log.Warnf("podsecuritypolicy \"%s\" already exists\n", sonarConfig.Name)
 			} else if err != nil {
-				log.Warnf("PodSecurityPolicy \"%s\" was not created: %w\n", sonarConfig.Name, err)
+				log.Warnf("podsecuritypolicy \"%s\" was not created: %w\n", sonarConfig.Name, err)
 			} else {
-				log.Infof("PodSecurityPolicy \"%s\" created\n", sonarConfig.Name)
+				log.Infof("podsecuritypolicy \"%s\" created\n", sonarConfig.Name)
 			}
 		}
 
@@ -131,11 +131,11 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 			err := k8sresource.NewClusterRole(k8sClientSet, ctx, sonarConfig)
 			// Handle the response
 			if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {
-				log.Warnf("ClusterRole \"%s\" already exists\n", sonarConfig.Name)
+				log.Warnf("clusterrole \"%s\" already exists\n", sonarConfig.Name)
 			} else if err != nil {
-				log.Warnf("ClusterRole \"%s\" was not created: %w\n", sonarConfig.Name, err)
+				log.Warnf("clusterrole \"%s\" was not created: %w\n", sonarConfig.Name, err)
 			} else {
-				log.Infof("ClusterRole \"%s\" created\n", sonarConfig.Name)
+				log.Infof("clusterrole \"%s\" created\n", sonarConfig.Name)
 			}
 		}
 
@@ -144,11 +144,11 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 			err := k8sresource.NewClusterRoleBinding(k8sClientSet, ctx, sonarConfig)
 			// Handle the response
 			if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {
-				log.Warnf("ClusterRoleBinding \"%s\" already exists\n", sonarConfig.Name)
+				log.Warnf("clusterrolebinding \"%s\" already exists\n", sonarConfig.Name)
 			} else if err != nil {
-				log.Warnf("ClusterRoleBinding \"%s\" was not created: %w\n", sonarConfig.Name, err)
+				log.Warnf("clusterrolebinding \"%s\" was not created: %w\n", sonarConfig.Name, err)
 			} else {
-				log.Infof("ClusterRoleBinding \"%s\" created\n", sonarConfig.Name)
+				log.Infof("clusterrolebinding \"%s\" created\n", sonarConfig.Name)
 			}
 		}
 	}
@@ -158,11 +158,11 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 		err := k8sresource.NewNetworkPolicy(k8sClientSet, ctx, sonarConfig)
 		// Handle the response
 		if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {
-			log.Warnf("NetworkPolicy \"%s\" already exists\n", sonarConfig.Name)
+			log.Warnf("networkpolicy \"%s\" already exists\n", sonarConfig.Name)
 		} else if err != nil {
-			log.Warnf("NetworkPolicy \"%s\" was not created: %w\n", sonarConfig.Name, err)
+			log.Warnf("networkpolicy \"%s\" was not created: %w\n", sonarConfig.Name, err)
 		} else {
-			log.Infof("NetworkPolicy \"%s\" created\n", sonarConfig.Name)
+			log.Infof("networkpolicy \"%s\" created\n", sonarConfig.Name)
 		}
 	}
 
@@ -171,11 +171,11 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 		err := k8sresource.NewDeployment(k8sClientSet, ctx, sonarConfig)
 		// Handle the response
 		if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {
-			log.Warnf("Deployment \"%s/%s\" already exists\n", sonarConfig.Namespace, sonarConfig.Name)
+			log.Warnf("deployment \"%s/%s\" already exists\n", sonarConfig.Namespace, sonarConfig.Name)
 		} else if err != nil {
-			log.Warnf("Deployment \"%s/%s\" was not created: %w\n", sonarConfig.Namespace, sonarConfig.Name, err)
+			log.Warnf("deployment \"%s/%s\" was not created: %w\n", sonarConfig.Namespace, sonarConfig.Name, err)
 		} else {
-			log.Infof("Deployment \"%s/%s\" created\n", sonarConfig.Namespace, sonarConfig.Name)
+			log.Infof("deployment \"%s/%s\" created\n", sonarConfig.Namespace, sonarConfig.Name)
 		}
 	}
 }
