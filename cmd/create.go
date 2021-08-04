@@ -38,7 +38,6 @@ var (
 	networkPolicy     bool
 	podSecurityPolicy bool
 	privileged        bool
-	sonarConfig       sonarconfig.SonarConfig
 
 	createCmd = &cobra.Command{
 		Use:   "create",
