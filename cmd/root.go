@@ -62,9 +62,9 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVar(&kubeConfig, "kube-config", "", "absolute path to kubeconfig file (default: '$HOME/.kube/config')")
-	rootCmd.PersistentFlags().StringVar(&kubeContext, "kube-context", "", "kubectl context to use")
-	rootCmd.PersistentFlags().StringVar(&name, "name", "debug", "deployment name (max 50 characters)")
-	rootCmd.PersistentFlags().StringVar(&namespace, "namespace", "default", "namespace")
+	rootCmd.PersistentFlags().StringVar(&kubeContext, "kube-context", "", "cluster context to use")
+	rootCmd.PersistentFlags().StringVar(&name, "name", "debug", "resource name (max 50 characters) (automatically prepended with 'sonar-'")
+	rootCmd.PersistentFlags().StringVar(&namespace, "namespace", "default", "namespace to operate in")
 }
 
 func initConfig() {
@@ -73,13 +73,13 @@ func initConfig() {
 		// Restrict deployment name to 50 characters. 50 is a relatively
 		// arbitrary choice of length, but it should be sufficient.
 		if len(name) > nameMaxLength {
-			log.Fatal("Deployment name must be 50 characters or less")
+			log.Fatal("deployment name must be 50 characters or less")
 		}
 
 		// Validate the provided name is suitable for a Kubernetes resource name.
 		ok, _ := regexp.MatchString(nameRegex, name)
 		if !ok {
-			log.Fatal("Deployment name can only contain alphanumeric characters, hyphens and periods")
+			log.Fatal("deployment name can only contain alphanumeric characters, hyphens and periods")
 		}
 	}
 
@@ -91,7 +91,7 @@ func initConfig() {
 		// Validate the provided namespace is suitable for a Kubernetes namespace.
 		ok, _ := regexp.MatchString(namespaceRegex, namespace)
 		if !ok {
-			log.Fatal("Namespaces can only contain alphanumeric characters and hyphens")
+			log.Fatal("namespaces can only contain alphanumeric characters and hyphens")
 		}
 	}
 }
