@@ -20,6 +20,7 @@ func ConfirmationPrompt(resourceType, name string) bool {
 	case "y", "yes":
 		return true
 	case "n", "no":
+		log.Infof("not deleting %s \"%s\"", resourceType, name)
 		return false
 	default:
 		fmt.Println("unknown response, please use 'y' or 'n':")
