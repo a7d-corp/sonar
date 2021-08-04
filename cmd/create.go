@@ -69,7 +69,7 @@ func validateFlags() {
 	// If the user has provided an image name then validate that it looks sane.
 	if createCmd.Flags().Lookup("image").Changed {
 		// Validate image to see if a tag has been provided; if not then
-		// use latest. Does not validate full image name, just whether a
+		// use :latest. Does not validate full image name, just whether a
 		// tag was provided.
 		ok, _ := regexp.MatchString(imageRegex, image)
 		if !ok {
