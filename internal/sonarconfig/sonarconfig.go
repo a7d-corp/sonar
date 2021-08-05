@@ -6,8 +6,9 @@ type SonarConfig struct {
 	Name              string
 	Namespace         string
 	NetworkPolicy     bool
+	PodArgs           string
+	PodCommand        string
 	PodSecurityPolicy bool
-	PodCmd            string
 	PodUser           int64
 	Privileged        bool
 }

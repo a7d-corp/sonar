@@ -17,6 +17,7 @@ package k8sresource
 
 import (
 	"context"
+	"strings"
 
 	"github.com/glitchcrab/sonar/internal/sonarconfig"
 	appsv1 "k8s.io/api/apps/v1"
@@ -72,6 +73,18 @@ func NewDeployment(k8sClientSet *kubernetes.Clientset, ctx context.Context, sona
 				},
 			},
 		},
+	}
+
+	// Update the deployment's command if one was provided.
+	if sonarConfig.PodCommand != "" {
+		command := strings.Fields(sonarConfig.PodCommand)
+		deployment.Spec.Template.Spec.Containers[0].Command = command
+	}
+
+	// Update the deployment's command if one was provided.
+	if sonarConfig.PodArgs != "" {
+		cmdargs := strings.Fields(sonarConfig.PodArgs)
+		deployment.Spec.Template.Spec.Containers[0].Args = cmdargs
 	}
 
 	// Create the Deployment
