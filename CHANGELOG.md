@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- Remove print leftover from debugging.
+
 ## [0.3.0] - 2021-08-05
 
 ### Added
