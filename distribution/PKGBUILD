@@ -1,0 +1,20 @@
+# Maintainer: Simon Weald <simon[at]simonweald[dot]com>
+
+pkgname=sonar-bin
+_srcname=sonar
+pkgdesc="Sonar deploys a debugging container to a Kubernetes cluster."
+pkgver=0.2.1
+pkgrel=1
+provides=('sonar')
+arch=('x86_64')
+url="https://github.com/glitchcrab/sonar"
+license=('apache')
+source=("${_srcname}-v${pkgver}.tar.gz::${url}/releases/download/v${pkgver}/${_srcname}-v${pkgver}-linux-amd64.tar.gz")
+sha256sums=('4f3a65b386796c07a64316a25902d1cb710e46f17b4af71c1a8ab8a631bda0eb')
+
+package() {
+    cd ${srcdir}
+    tar -xzf ${_srcname}-v${pkgver}.tar.gz
+    install -Dm755 "${srcdir}/${_srcname}-v${pkgver}-linux-amd64/${_srcname}" "${pkgdir}/usr/bin/${_srcname}"
+}
+
