@@ -37,6 +37,7 @@ var (
 	image             string
 	networkPolicy     bool
 	podSecurityPolicy bool
+	podUser           int64
 	privileged        bool
 
 	createCmd = &cobra.Command{
@@ -62,6 +63,7 @@ func init() {
 	createCmd.Flags().StringVarP(&image, "image", "i", "busybox:latest", "image name (e.g. glitchcrab/ubuntu-debug:latest)")
 	createCmd.Flags().BoolVar(&networkPolicy, "networkpolicy", false, "create NetworkPolicy (default \"false\")")
 	createCmd.Flags().BoolVar(&podSecurityPolicy, "podsecuritypolicy", false, "create PodSecurityPolicy (default \"false\")")
+	createCmd.Flags().Int64Var(&podUser, "pod-userid", 1000, "userID to run the pod as")
 	createCmd.Flags().BoolVar(&privileged, "privileged", false, "run the container as root (assumes userID of 0) (default \"false\")")
 }
 
@@ -87,9 +89,10 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 		Namespace:         namespace,
 		NetworkPolicy:     networkPolicy,
 		PodSecurityPolicy: podSecurityPolicy,
+		PodUser:           podUser,
 		Privileged:        privileged,
 	}
-
+	fmt.Println(sonarConfig)
 	// Create a clientset to interact with the cluster.
 	k8sClientSet, err := k8sclient.New(kubeContext, kubeConfig)
 	if err != nil {

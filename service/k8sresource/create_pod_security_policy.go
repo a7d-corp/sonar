@@ -25,13 +25,13 @@ import (
 )
 
 var (
-	minRunAsID int64 = 2
+	minRunAsID int64 = 1000
 	maxRunAsID int64 = 65535
 )
 
 func NewPodSecurityPolicy(k8sClientSet *kubernetes.Clientset, ctx context.Context, sonarConfig sonarconfig.SonarConfig) (err error) {
-	if sonarConfig.Privileged {
-		minRunAsID = 1
+	if sonarConfig.PodUser != minRunAsID {
+		minRunAsID = sonarConfig.PodUser
 	}
 
 	// Define the PodSecurityPolicy

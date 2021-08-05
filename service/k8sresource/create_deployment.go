@@ -27,15 +27,10 @@ import (
 )
 
 var (
-	replicas  int32 = 1
-	runAsUser int64 = 1000
+	replicas int32 = 1
 )
 
 func NewDeployment(k8sClientSet *kubernetes.Clientset, ctx context.Context, sonarConfig sonarconfig.SonarConfig) (err error) {
-	if sonarConfig.PodUser != 0 {
-		runAsUser = sonarConfig.PodUser
-	}
-
 	// Define the Deployment
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -72,7 +67,7 @@ func NewDeployment(k8sClientSet *kubernetes.Clientset, ctx context.Context, sona
 					RestartPolicy:      corev1.RestartPolicyAlways,
 					ServiceAccountName: sonarConfig.Name,
 					SecurityContext: &corev1.PodSecurityContext{
-						RunAsUser: &runAsUser,
+						RunAsUser: &sonarConfig.PodUser,
 					},
 				},
 			},
