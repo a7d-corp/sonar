@@ -111,3 +111,15 @@ sonar delete
 sonar delete --name test --namespace kube-system
 ```
  - deletes all resources in namespace 'kube-system' named 'sonar-test'.
+
+## Installing
+
+Either:
+ - Grab the binary for your distribution from the [releases](https://github.com/glitchcrab/sonar/releases).
+
+or:
+ - Build it from source:
+
+```
+go build -o sonar
+```
