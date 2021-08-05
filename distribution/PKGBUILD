@@ -3,14 +3,14 @@
 pkgname=sonar-bin
 _srcname=sonar
 pkgdesc="Sonar deploys a debugging container to a Kubernetes cluster."
-pkgver=0.2.1
+pkgver=0.3.0
 pkgrel=1
 provides=('sonar')
 arch=('x86_64')
 url="https://github.com/glitchcrab/sonar"
 license=('apache')
 source=("${_srcname}-v${pkgver}.tar.gz::${url}/releases/download/v${pkgver}/${_srcname}-v${pkgver}-linux-amd64.tar.gz")
-sha256sums=('4f3a65b386796c07a64316a25902d1cb710e46f17b4af71c1a8ab8a631bda0eb')
+sha256sums=('464c92377c1d0d9bda7a5660c693661772eaa33201b03cd742c2c38ce64ee461')
 
 package() {
     cd ${srcdir}
