@@ -4,7 +4,7 @@ var (
 	description = "Sonar deploys a debugging container to a Kubernetes cluster."
 	name        = "sonar"
 	source      = "https://github.com/glitchcrab/sonar"
-	version     = "0.4.0"
+	version     = "0.4.1-dev"
 )
 
 func Description() string {
