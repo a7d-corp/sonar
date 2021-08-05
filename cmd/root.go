@@ -63,8 +63,8 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&kubeConfig, "kube-config", "", "absolute path to kubeconfig file (default: '$HOME/.kube/config')")
 	rootCmd.PersistentFlags().StringVar(&kubeContext, "kube-context", "", "cluster context to use")
-	rootCmd.PersistentFlags().StringVar(&name, "name", "debug", "resource name (max 50 characters) (automatically prepended with 'sonar-'")
-	rootCmd.PersistentFlags().StringVar(&namespace, "namespace", "default", "namespace to operate in")
+	rootCmd.PersistentFlags().StringVarP(&name, "name", "N", "debug", "resource name (max 50 characters) (automatically prepended with 'sonar-'")
+	rootCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "default", "namespace to operate in")
 }
 
 func initConfig() {

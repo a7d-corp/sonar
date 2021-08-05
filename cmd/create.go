@@ -64,10 +64,10 @@ func init() {
 
 	createCmd.Flags().StringVarP(&image, "image", "i", "busybox:latest", "image name (e.g. glitchcrab/ubuntu-debug:latest)")
 	createCmd.Flags().BoolVar(&networkPolicy, "networkpolicy", false, "create NetworkPolicy (default \"false\")")
-	createCmd.Flags().StringVar(&podArgs, "pod-args", "24h", "args to pass to pod command")
-	createCmd.Flags().StringVar(&podCommand, "pod-command", "sleep", "pod command (aka image entrypoint)")
+	createCmd.Flags().StringVarP(&podArgs, "pod-args", "a", "24h", "args to pass to pod command")
+	createCmd.Flags().StringVarP(&podCommand, "pod-command", "c", "sleep", "pod command (aka image entrypoint)")
 	createCmd.Flags().BoolVar(&podSecurityPolicy, "podsecuritypolicy", false, "create PodSecurityPolicy (default \"false\")")
-	createCmd.Flags().Int64Var(&podUser, "pod-userid", 1000, "userID to run the pod as")
+	createCmd.Flags().Int64VarP(&podUser, "pod-userid", "u", 1000, "userID to run the pod as")
 	createCmd.Flags().BoolVar(&privileged, "privileged", false, "run the container as root (assumes userID of 0) (default \"false\")")
 }
 

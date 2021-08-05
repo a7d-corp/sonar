@@ -51,7 +51,7 @@ in order to ensure that Sonar can find the resources.`,
 func init() {
 	rootCmd.AddCommand(deleteCmd)
 
-	deleteCmd.Flags().BoolVar(&force, "force", false, "skip all confirmation prompts when deleting (default \"false\")")
+	deleteCmd.Flags().BoolVarP(&force, "force", "f", false, "skip all confirmation prompts when deleting (default \"false\")")
 }
 
 func deleteSonarDeployment(cmd *cobra.Command, args []string) {
