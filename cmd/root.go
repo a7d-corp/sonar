@@ -43,12 +43,33 @@ var (
 	// rootCmd represents the base command when called without any subcommands
 	rootCmd = &cobra.Command{
 		Use:   "sonar",
-		Short: "Sonar is a tool for deploying a standalone debugging container to a Kubernetes cluster.",
-		Long: `Sonar is used to create a Kubernetes deployment with a debug
-container for troubleshooting cluster issues.
+		Short: "Sonar deploys a debugging container to a Kubernetes cluster.",
+		Long: `Sonar is used to create a Kubernetes deployment with a debug container
+for troubleshooting cluster issues.
 
-The deployment can be customised to a certain extent in
-order to suit the target cluster configuration.`,
+The deployment can be customised to a certain extent in order to
+suit the target cluster configuration.
+
+Global flags:
+
+--kube-config (default: '/home/$user/.kube/config')
+
+Absolute path to the kubeconfig file to use.
+
+--kube-context (default: current context in kube config)
+
+Name of the kube context to use to use. NOTE: not yet implemented.
+
+--name (default: 'debug')
+
+Name given to all the created resources. This will be automatically
+prepended with 'sonar-', so a provided name of 'test' will result
+in a deployment named 'sonar-debug'. Provided name can be a max of
+50 characters.
+
+--namespace (default: 'default')
+
+Namespace to deploy resources to.`,
 	}
 )
 

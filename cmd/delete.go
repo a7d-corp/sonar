@@ -35,15 +35,33 @@ var (
 	force bool
 
 	deleteCmd = &cobra.Command{
-		Use:   "delete",
-		Short: "delete removes all Sonar resources from a Kubernetes cluster",
-		Long: `delete will attempt to remove all resources deployed to a cluster
+		Use:     "delete",
+		Aliases: []string{"destroy"},
+		Short:   "Delete destroys all Sonar resources",
+		Long: `Delete will attempt to remove all resources deployed to a cluster
 by Sonor in the provided kubectl context (or the current context if
 none is provided).
 
 All flags are optional, however if the deployment was configured when
 it was initially deployed then a combination of flags will be required
-in order to ensure that Sonar can find the resources.`,
+in order to ensure that Sonar can find the resources.
+
+Global flags:
+
+Run "sonar help" in order to see flags which apply to all subcommands.
+
+Flags:
+
+--force (default: false)
+
+Skips all interaction and deletes all resources created by Sonar.`,
+		Example: `
+"sonar delete" - deletes all resources which match the defaults. This
+will result in deleting all resources in namespace 'default' which are
+named 'sonar-debug'.
+
+"sonar delete --name test --namespace kube-system" - deletes all
+resources in namespace 'kube-system' named 'sonar-test'.`,
 		Run: deleteSonarDeployment,
 	}
 )

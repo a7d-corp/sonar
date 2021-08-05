@@ -43,17 +43,72 @@ var (
 	privileged        bool
 
 	createCmd = &cobra.Command{
-		Use:   "create",
-		Short: "create applies a debug deployment to a Kubernetes cluster",
-		Long: `create will attempt to create a debugging deployment and all supporting
+		Use:     "create",
+		Aliases: []string{"deploy"},
+		Short:   "Create applies a debug deployment to a Kubernetes cluster",
+		Long: `Create will attempt to create a debugging deployment and all supporting
 resources in the provided kubectl context (or the current context if
 none is provided). Sonar assumes that your context has the required
 privileges to create the necessary resources.
 
-All flags are optional as sane defaults are provided.
+All flags are optional as defaults are provided.
 
-Image names may be provided with or without a tag; if no tag is detected
-then the 'latest' tag is automatically used.`,
+Note: it is safe to run "sonar create" multiple times; if a resource
+already exists then it will be skipped. For example, this can be used
+to add a NetworkPolicy to an existing Sonar deployment which was
+created without it.
+
+Global flags:
+
+Run "sonar help" in order to see flags which apply to all subcommands.
+
+Flags:
+
+--image (default: 'busybox:latest')
+
+Name of the image to use. Image names may be provided with or without a
+tag; if no tag is detected then 'latest' is automatically used.
+
+--pod-cmd (default: 'sleep')
+
+Command to use as the entrypoint.
+
+--pod-args (default: '24h')
+
+Args to pass to the command.
+
+--pod-userid (default: 1000)
+
+User ID to run the container as (set in deployment's SecurityContext).
+
+--podsecuritypolicy (default: false)
+
+Create a PodSecurityPolicy and the associated ClusterRole and Binding.
+The PSP will inherit the value set via --pod-userid and configure the
+minimum value of the RunAs range accordingly.
+
+--privileged (default: false)
+
+Allow the pod to run as a privileged pod; must be provided at the same
+time as --podsecuritypolicy to have any effect.
+
+--networkpolicy (default: false)
+
+Apply a NetworkPolicy which allows all ingress and egress traffic.`,
+		Example: `
+"sonar create" - accept all defaults. Creates a deployment in namespace
+'default' called 'sonar-debug'.  The pod image will be 'busybox:latest'
+with 'sleep 24h' as the initial command.
+
+"sonar create --image glitchcrab/ubuntu-debug:v1.0 --pod-cmd sleep \
+    --pod-args 1h" - uses the provided image, command and args.
+
+"sonar create --podsecuritypolicy --pod-userid 0 --privileged" - creates
+a deployment which runs as root. Also creates a PodSecurityPolicy
+(and associated RBAC) which allows the pod to run as root/privileged.
+
+"sonar create --networkpolicy" - creates a NetworkPolicy which allows
+all ingress and traffic to the Sonar pod.`,
 		Run: createSonarDeployment,
 	}
 )
