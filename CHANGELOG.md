@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Github workflow to build and test on PRs.
+
 ## [0.4.0] - 2021-08-05
 
 ### Added

@@ -1,0 +1,17 @@
+name: 'build binary'
+on:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  build:
+    name: 'Build binary and test'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'checkout'
+        uses: actions/checkout@v2
+      - name: 'setup go'
+        uses: actions/setup-go@v2
+      - name: 'build binary'
+        run: go build -o sonar
+      - name: 'run built binary'
+        run: ./sonar version
