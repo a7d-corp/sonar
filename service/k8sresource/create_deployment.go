@@ -87,6 +87,11 @@ func NewDeployment(k8sClientSet *kubernetes.Clientset, ctx context.Context, sona
 		deployment.Spec.Template.Spec.Containers[0].Args = cmdargs
 	}
 
+	// Add the NodeName if one was provided.
+	if sonarConfig.NodeName != "" {
+		deployment.Spec.Template.Spec.NodeName = sonarConfig.NodeName
+	}
+
 	// Create the Deployment
 	_, err = k8sClientSet.AppsV1().Deployments(sonarConfig.Namespace).Create(ctx, deployment, metav1.CreateOptions{})
 
