@@ -95,14 +95,19 @@ time as --podsecuritypolicy to have any effect.
 
 --networkpolicy (default: false)
 
-Apply a NetworkPolicy which allows all ingress and egress traffic.`,
+Apply a NetworkPolicy which allows all ingress and egress traffic.
+
+--node-selector (default: none)
+
+Attempt to schedule the pod on the named node.`,
 		Example: `
 "sonar create" - accept all defaults. Creates a deployment in namespace
 'default' called 'sonar-debug'.  The pod image will be 'busybox:latest'
 with 'sleep 24h' as the initial command.
 
 "sonar create --image glitchcrab/ubuntu-debug:v1.0 --pod-cmd sleep \
-    --pod-args 1h" - uses the provided image, command and args.
+    --pod-args 1h --node-selector worker10" - uses the provided image,
+command and args, and attempts to schedule the pod on node 'worker10'.
 
 "sonar create --podsecuritypolicy --pod-userid 0 --privileged" - creates
 a deployment which runs as root. Also creates a PodSecurityPolicy
