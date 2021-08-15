@@ -2,6 +2,25 @@
 
 Sonar deploys a debugging container to a Kubernetes cluster.
 
+```bash
+$ sonar create --image glitchcrab/ubuntu-debug:latest --networkpolicy --podsecuritypolicy \
+   --pod-command sleep --pod-args 1h --name glitchcrab-debug --namespace sonar 
+INFO[0000] serviceaccount "sonar/sonar-glitchcrab-debug" created
+INFO[0000] podsecuritypolicy "sonar-glitchcrab-debug" created
+INFO[0000] clusterrole "sonar-glitchcrab-debug" created
+INFO[0000] clusterrolebinding "sonar-glitchcrab-debug" created
+INFO[0000] networkpolicy "sonar-glitchcrab-debug" created
+INFO[0000] deployment "sonar/sonar-glitchcrab-debug" created
+$ kubectl get po -n sonar
+NAME                                      READY   STATUS    RESTARTS   AGE
+sonar-glitchcrab-debug-575db85b54-gss4v   1/1     Running   0          43s
+$ kubectl exec -it sonar-glitchcrab-debug-575db85b54-gss4v -- bash
+notroot@sonar-glitchcrab-debug-575db85b54-gss4v:/$ whoami
+notroot
+notroot@sonar-glitchcrab-debug-575db85b54-gss4v:/$ hostname
+sonar-glitchcrab-debug-575db85b54-gss4v
+```
+
 ## Configuration
 
 ### Global flags
