@@ -19,6 +19,15 @@ notroot@sonar-glitchcrab-debug-575db85b54-gss4v:/$ whoami
 notroot
 notroot@sonar-glitchcrab-debug-575db85b54-gss4v:/$ hostname
 sonar-glitchcrab-debug-575db85b54-gss4v
+$ sonar delete --name glitchcrab-debug --namespace sonar --force
+INFO[0000] force was set, not asking for confirmation before deleting resources
+INFO[0000] deleting deployment
+INFO[0000] deleting podsecuritypolicy
+INFO[0000] deleting clusterrolebinding
+INFO[0000] deleting clusterrole
+INFO[0000] deleting networkpolicy
+INFO[0000] deleting serviceaccount
+INFO[0000] resources deleted: deployment, podsecuritypolicy, clusterrolebinding, clusterrole, networkpolicy, serviceaccount
 ```
 
 ## Configuration
