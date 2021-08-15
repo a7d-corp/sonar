@@ -36,6 +36,7 @@ const (
 var (
 	image             string
 	networkPolicy     bool
+	nodeName          string
 	podArgs           string
 	podCommand        string
 	podSecurityPolicy bool
@@ -94,14 +95,19 @@ time as --podsecuritypolicy to have any effect.
 
 --networkpolicy (default: false)
 
-Apply a NetworkPolicy which allows all ingress and egress traffic.`,
+Apply a NetworkPolicy which allows all ingress and egress traffic.
+
+--node-name (default: none)
+
+Attempt to schedule the pod on the named node.`,
 		Example: `
 "sonar create" - accept all defaults. Creates a deployment in namespace
 'default' called 'sonar-debug'.  The pod image will be 'busybox:latest'
 with 'sleep 24h' as the initial command.
 
 "sonar create --image glitchcrab/ubuntu-debug:v1.0 --pod-cmd sleep \
-    --pod-args 1h" - uses the provided image, command and args.
+    --pod-args 1h --node-name worker10" - uses the provided image,
+command and args, and attempts to schedule the pod on node 'worker10'.
 
 "sonar create --podsecuritypolicy --pod-userid 0 --privileged" - creates
 a deployment which runs as root. Also creates a PodSecurityPolicy
@@ -119,6 +125,7 @@ func init() {
 
 	createCmd.Flags().StringVarP(&image, "image", "i", "busybox:latest", "image name (e.g. glitchcrab/ubuntu-debug:latest)")
 	createCmd.Flags().BoolVar(&networkPolicy, "networkpolicy", false, "create NetworkPolicy (default \"false\")")
+	createCmd.Flags().StringVarP(&nodeName, "node-name", "", "", "node name to attempt to schedule the pod on")
 	createCmd.Flags().StringVarP(&podArgs, "pod-args", "a", "24h", "args to pass to pod command")
 	createCmd.Flags().StringVarP(&podCommand, "pod-command", "c", "sleep", "pod command (aka image entrypoint)")
 	createCmd.Flags().BoolVar(&podSecurityPolicy, "podsecuritypolicy", false, "create PodSecurityPolicy (default \"false\")")
@@ -147,6 +154,7 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 		Name:              name,
 		Namespace:         namespace,
 		NetworkPolicy:     networkPolicy,
+		NodeName:          nodeName,
 		PodArgs:           podArgs,
 		PodCommand:        podCommand,
 		PodSecurityPolicy: podSecurityPolicy,

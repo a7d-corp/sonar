@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Github workflow to build and test on PRs.
+- Flag to provide a nodename to schedule the pod on.
 
 ## [0.4.0] - 2021-08-05
 
