@@ -36,6 +36,7 @@ const (
 var (
 	image             string
 	networkPolicy     bool
+	nodeSelector      string
 	podArgs           string
 	podCommand        string
 	podSecurityPolicy bool
@@ -119,6 +120,7 @@ func init() {
 
 	createCmd.Flags().StringVarP(&image, "image", "i", "busybox:latest", "image name (e.g. glitchcrab/ubuntu-debug:latest)")
 	createCmd.Flags().BoolVar(&networkPolicy, "networkpolicy", false, "create NetworkPolicy (default \"false\")")
+	createCmd.Flags().StringVarP(&nodeSelector, "node-selector", "", "", "node name to attempt to schedule the pod on")
 	createCmd.Flags().StringVarP(&podArgs, "pod-args", "a", "24h", "args to pass to pod command")
 	createCmd.Flags().StringVarP(&podCommand, "pod-command", "c", "sleep", "pod command (aka image entrypoint)")
 	createCmd.Flags().BoolVar(&podSecurityPolicy, "podsecuritypolicy", false, "create PodSecurityPolicy (default \"false\")")
@@ -147,6 +149,7 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 		Name:              name,
 		Namespace:         namespace,
 		NetworkPolicy:     networkPolicy,
+		NodeSelector:      nodeSelector,
 		PodArgs:           podArgs,
 		PodCommand:        podCommand,
 		PodSecurityPolicy: podSecurityPolicy,
