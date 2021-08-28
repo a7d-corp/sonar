@@ -39,9 +39,9 @@ INFO[0000] resources deleted: deployment, podsecuritypolicy, clusterrolebinding,
 
 Absolute path to the kubeconfig file to use.
 
---kube-context (default: current context in kube config)
+--context (default: current context in kube config)
 
-Name of the kube context to use to use. NOTE: not yet implemented.
+Name of the kube context to use.
 
 --name (default: 'debug')
 
@@ -117,6 +117,12 @@ sonar create --networkpolicy
 ```
 
  - also creates a NetworkPolicy which allows all ingress and traffic to the Sonar pod.
+
+```
+sonar create --context foo-context --namespace bar
+```
+
+- create a deployment using context `foo-context` in namespace `bar`.
 
 ### Delete
 
