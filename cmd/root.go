@@ -56,9 +56,9 @@ Global flags:
 
 Absolute path to the kubeconfig file to use.
 
---kube-context (default: current context in kube config)
+--context (default: current context in kube config)
 
-Name of the kube context to use to use. NOTE: not yet implemented.
+Name of the kubernetes context to use.
 
 --name (default: 'debug')
 
@@ -83,7 +83,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVar(&kubeConfig, "kube-config", "", "absolute path to kubeconfig file (default: '$HOME/.kube/config')")
-	rootCmd.PersistentFlags().StringVar(&kubeContext, "kube-context", "", "cluster context to use")
+	rootCmd.PersistentFlags().StringVar(&kubeContext, "context", "", "context to use")
 	rootCmd.PersistentFlags().StringVarP(&name, "name", "N", "debug", "resource name (max 50 characters) (automatically prepended with 'sonar-'")
 	rootCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "default", "namespace to operate in")
 }
