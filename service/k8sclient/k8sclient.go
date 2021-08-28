@@ -26,21 +26,29 @@ import (
 )
 
 func New(kubeContext, kubeConfig string) (*kubernetes.Clientset, error) {
-	// Set the kubeconfig to the default location if the path
-	// wasn't provided.
+	// Set the kubeconfig to the default location if the path wasn't provided.
 	if kubeConfig == "" {
 		if home := homedir.HomeDir(); home != "" {
 			kubeConfig = filepath.Join(home, ".kube", "config")
 		}
 	}
 
-	// TODO: implement switching to provided context name
+	// Set defaults for creating a new ClientConfig.
+	loadingRules := &clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeConfig}
+	configOverrides := &clientcmd.ConfigOverrides{}
 
-	config, err := clientcmd.BuildConfigFromFlags("", kubeConfig)
+	// Set the context if it was provided.
+	if kubeContext != "" {
+		configOverrides = &clientcmd.ConfigOverrides{CurrentContext: kubeContext}
+	}
+
+	// Create the ClientConfig.
+	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides).ClientConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// Create a Clientset with the provided values.
 	k8sClientSet, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		log.Fatal(err)
