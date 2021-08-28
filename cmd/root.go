@@ -52,7 +52,7 @@ suit the target cluster configuration.
 
 Global flags:
 
---kube-config (default: '/home/$user/.kube/config')
+--kubeconfig (default: '/home/$user/.kube/config')
 
 Absolute path to the kubeconfig file to use.
 
@@ -82,7 +82,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVar(&kubeConfig, "kube-config", "", "absolute path to kubeconfig file (default: '$HOME/.kube/config')")
+	rootCmd.PersistentFlags().StringVar(&kubeConfig, "kubeconfig", "", "absolute path to kubeconfig file (default: '/home/$user/.kube/config')")
 	rootCmd.PersistentFlags().StringVar(&kubeContext, "context", "", "context to use")
 	rootCmd.PersistentFlags().StringVarP(&name, "name", "N", "debug", "resource name (max 50 characters) (automatically prepended with 'sonar-'")
 	rootCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "default", "namespace to operate in")

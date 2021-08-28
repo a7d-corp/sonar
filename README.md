@@ -35,7 +35,7 @@ INFO[0000] resources deleted: deployment, podsecuritypolicy, clusterrolebinding,
 ### Global flags
 
 ```
---kube-config (default: '/home/$user/.kube/config')
+--kubeconfig (default: '/home/$user/.kube/config')
 
 Absolute path to the kubeconfig file to use.
 
