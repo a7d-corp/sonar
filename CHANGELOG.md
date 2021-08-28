@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Allow setting the cluster context via the --context flag.
 
+### Changed
+
+- Align the kube config flag with kubectl.
+
 ## [0.5.0] - 2021-08-15
 
 ### Added
