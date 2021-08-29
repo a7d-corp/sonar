@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add --node-exec flag to grant access to a host's IPC/net/PID namespaces.
+
 ## [0.6.0] - 2021-08-28
 
 ### Added

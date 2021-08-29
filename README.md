@@ -91,6 +91,16 @@ time as --podsecuritypolicy to have any effect.
 --networkpolicy (default: false)
 
 Apply a NetworkPolicy which allows all ingress and egress traffic.
+
+--node-name (default: none)
+
+Attempt to schedule the pod on the named node.i
+
+--node-exec (default: false)
+
+Create a privileged pod in the node's PID & network namespaces. A node
+name to schedule onto must also be provided. Note that the following
+flags will be ignored: networkpolicy, podsecuritypolicy, privileged.
 ```
 
 #### Examples
@@ -123,6 +133,12 @@ sonar create --context foo-context --namespace bar
 ```
 
 - create a deployment using context `foo-context` in namespace `bar`.
+
+```
+sonar create --node-exec true --node-name worker2 --pod-userid 0
+```
+
+- create a pod with root access to the node named `worker2`.
 
 ### Delete
 

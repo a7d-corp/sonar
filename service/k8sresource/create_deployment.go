@@ -28,10 +28,20 @@ import (
 )
 
 var (
+	hostIPC        = false
+	hostNet        = false
+	hostPID        = false
 	replicas int32 = 1
 )
 
 func NewDeployment(k8sClientSet *kubernetes.Clientset, ctx context.Context, sonarConfig sonarconfig.SonarConfig) (err error) {
+	// Create container in the host namespaces if node-exec is set.
+	if sonarConfig.NodeExec {
+		hostIPC = true
+		hostNet = true
+		hostPID = true
+	}
+
 	// Define the Deployment
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -65,6 +75,9 @@ func NewDeployment(k8sClientSet *kubernetes.Clientset, ctx context.Context, sona
 							},
 						},
 					},
+					HostIPC:            hostIPC,
+					HostNetwork:        hostNet,
+					HostPID:            hostPID,
 					RestartPolicy:      corev1.RestartPolicyAlways,
 					ServiceAccountName: sonarConfig.Name,
 					SecurityContext: &corev1.PodSecurityContext{

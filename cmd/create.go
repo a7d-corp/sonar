@@ -36,6 +36,7 @@ const (
 var (
 	image             string
 	networkPolicy     bool
+	nodeExec          bool
 	nodeName          string
 	podArgs           string
 	podCommand        string
@@ -99,7 +100,13 @@ Apply a NetworkPolicy which allows all ingress and egress traffic.
 
 --node-name (default: none)
 
-Attempt to schedule the pod on the named node.`,
+Attempt to schedule the pod on the named node.i
+
+--node-exec (default: false)
+
+Create a privileged pod in the node's PID & network namespaces. A node
+name to schedule onto must also be provided. Note that the following
+flags will be ignored: networkpolicy, podsecuritypolicy, privileged.`,
 		Example: `
 "sonar create" - accept all defaults. Creates a deployment in namespace
 'default' called 'sonar-debug'.  The pod image will be 'busybox:latest'
@@ -114,7 +121,11 @@ a deployment which runs as root. Also creates a PodSecurityPolicy
 (and associated RBAC) which allows the pod to run as root/privileged.
 
 "sonar create --networkpolicy" - creates a NetworkPolicy which allows
-all ingress and traffic to the Sonar pod.`,
+all ingress and traffic to the Sonar pod.
+
+"sonar create --node-exec true --node-name worker2 \
+    --pod-userid 0" - creates a pod with root access to the node named
+worker2.`,
 		Run: createSonarDeployment,
 	}
 )
@@ -125,6 +136,7 @@ func init() {
 
 	createCmd.Flags().StringVarP(&image, "image", "i", "busybox:latest", "image name (e.g. glitchcrab/ubuntu-debug:latest)")
 	createCmd.Flags().BoolVar(&networkPolicy, "networkpolicy", false, "create NetworkPolicy (default \"false\")")
+	createCmd.Flags().BoolVar(&nodeExec, "node-exec", false, "spawn a container with root access to the node (default \"false\")")
 	createCmd.Flags().StringVarP(&nodeName, "node-name", "", "", "node name to attempt to schedule the pod on")
 	createCmd.Flags().StringVarP(&podArgs, "pod-args", "a", "24h", "args to pass to pod command")
 	createCmd.Flags().StringVarP(&podCommand, "pod-command", "c", "sleep", "pod command (aka image entrypoint)")
@@ -147,6 +159,18 @@ func validateFlags() {
 }
 
 func createSonarDeployment(cmd *cobra.Command, args []string) {
+	// Set sane options if we're exec-ing into a node.
+	if nodeExec {
+		// Error out if node name was not provided.
+		if nodeName == "" {
+			log.Fatal("--node-exec also requires --node-name to be provided")
+		}
+
+		networkPolicy = false
+		podSecurityPolicy = true
+		privileged = true
+	}
+
 	// Create a SonarConfig
 	sonarConfig := sonarconfig.SonarConfig{
 		Image:             image,
@@ -154,6 +178,7 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 		Name:              name,
 		Namespace:         namespace,
 		NetworkPolicy:     networkPolicy,
+		NodeExec:          nodeExec,
 		NodeName:          nodeName,
 		PodArgs:           podArgs,
 		PodCommand:        podCommand,

@@ -56,9 +56,6 @@ func NewPodSecurityPolicy(k8sClientSet *kubernetes.Clientset, ctx context.Contex
 					},
 				},
 			},
-			HostIPC:                false,
-			HostNetwork:            false,
-			HostPID:                false,
 			Privileged:             sonarConfig.Privileged,
 			ReadOnlyRootFilesystem: false,
 			RunAsGroup: &policyv1beta1.RunAsGroupStrategyOptions{
@@ -89,6 +86,13 @@ func NewPodSecurityPolicy(k8sClientSet *kubernetes.Clientset, ctx context.Contex
 				"*",
 			},
 		},
+	}
+
+	// Grant access to host namespaces if node-exec is set.
+	if sonarConfig.NodeExec {
+		psp.Spec.HostIPC = true
+		psp.Spec.HostNetwork = true
+		psp.Spec.HostPID = true
 	}
 
 	// Create the PodSecurityPolicy
