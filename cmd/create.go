@@ -163,7 +163,7 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 	if nodeExec {
 		// Error out if node name was not provided.
 		if nodeName == "" {
-			log.Error("--node-exec also requires --node-name to be provided")
+			log.Fatal("--node-exec also requires --node-name to be provided")
 		}
 
 		networkPolicy = false
