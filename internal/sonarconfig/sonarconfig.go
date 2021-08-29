@@ -6,6 +6,7 @@ type SonarConfig struct {
 	Name              string
 	Namespace         string
 	NetworkPolicy     bool
+	NodeExec          bool
 	NodeName          string
 	PodArgs           string
 	PodCommand        string
