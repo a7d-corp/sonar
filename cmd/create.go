@@ -123,8 +123,9 @@ a deployment which runs as root. Also creates a PodSecurityPolicy
 "sonar create --networkpolicy" - creates a NetworkPolicy which allows
 all ingress and traffic to the Sonar pod.
 
-"sonar create --node-exec true --node-name worker2" - creates a pod with
-root access to the node named worker2.`,
+"sonar create --node-exec true --node-name worker2 \
+    --pod-userid 0" - creates a pod with root access to the node named
+worker2.`,
 		Run: createSonarDeployment,
 	}
 )
@@ -158,6 +159,18 @@ func validateFlags() {
 }
 
 func createSonarDeployment(cmd *cobra.Command, args []string) {
+	// Set sane options if we're exec-ing into a node.
+	if nodeExec {
+		// Error out if node name was not provided.
+		if nodeName == "" {
+			log.Error("--node-exec also requires --node-name to be provided")
+		}
+
+		networkPolicy = false
+		podSecurityPolicy = true
+		privileged = true
+	}
+
 	// Create a SonarConfig
 	sonarConfig := sonarconfig.SonarConfig{
 		Image:             image,
