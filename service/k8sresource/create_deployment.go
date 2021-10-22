@@ -105,6 +105,29 @@ func NewDeployment(k8sClientSet *kubernetes.Clientset, ctx context.Context, sona
 		deployment.Spec.Template.Spec.NodeName = sonarConfig.NodeName
 	}
 
+	// Mount the hosts's filesystem if exec-ing into a node.
+	if sonarConfig.NodeExec {
+		// create the volume.
+		deployment.Spec.Template.Spec.Volumes = []corev1.Volume{
+			{
+				Name: "host-rootfs",
+				VolumeSource: corev1.VolumeSource{
+					HostPath: &corev1.HostPathVolumeSource{
+						Path: "/",
+					},
+				},
+			},
+		}
+
+		// attach it to the container
+		deployment.Spec.Template.Spec.Containers[0].VolumeMounts = []corev1.VolumeMount{
+			{
+				Name:      "host-rootfs",
+				MountPath: "/host",
+			},
+		}
+	}
+
 	// Create the Deployment
 	_, err = k8sClientSet.AppsV1().Deployments(sonarConfig.Namespace).Create(ctx, deployment, metav1.CreateOptions{})
 

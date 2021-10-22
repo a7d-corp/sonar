@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Mount host filesystem into container when `--node-exec` flag is used.
+
 ## [0.7.0] - 2021-08-29
 
 ### Added
