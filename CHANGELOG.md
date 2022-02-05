@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix client-go to work with OIDC enabled clusters.
 - Mount host filesystem into container when `--node-exec` flag is used.
 
 ## [0.7.0] - 2021-08-29
