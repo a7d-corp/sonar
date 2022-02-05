@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.1] - 2022-02-05
+
 ### Fixed
 
 - Fix client-go to work with OIDC enabled clusters.
@@ -83,7 +85,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release; rough around the edges but usable.
 
-[Unreleased]: https://github.com/glitchcrab/sonar/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/glitchcrab/sonar/compare/v0.7.1...HEAD
+[0.7.1]: https://github.com/glitchcrab/sonar/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/glitchcrab/sonar/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/glitchcrab/sonar/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/glitchcrab/sonar/compare/v0.4.0...v0.5.0
