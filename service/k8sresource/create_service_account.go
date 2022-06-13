@@ -17,11 +17,14 @@ package k8sresource
 
 import (
 	"context"
+	"fmt"
+	"os"
 
 	"github.com/glitchcrab/sonar/internal/sonarconfig"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"sigs.k8s.io/yaml"
 )
 
 func NewServiceAccount(k8sClientSet *kubernetes.Clientset, ctx context.Context, sonarConfig sonarconfig.SonarConfig) (err error) {
@@ -38,6 +41,9 @@ func NewServiceAccount(k8sClientSet *kubernetes.Clientset, ctx context.Context, 
 		},
 	}
 
+	rendered, _ := yaml.Marshal(sa)
+	fmt.Printf("%c", rendered)
+	os.Stdout.Write(rendered)
 	_, err = k8sClientSet.CoreV1().ServiceAccounts(sonarConfig.Namespace).Create(ctx, sa, metav1.CreateOptions{})
 
 	return err
