@@ -34,7 +34,7 @@ const (
 )
 
 var (
-	dryRun            bool
+	// dryRun            bool
 	image             string
 	networkPolicy     bool
 	nodeExec          bool
@@ -139,7 +139,7 @@ func init() {
 	rootCmd.AddCommand(createCmd)
 	cobra.OnInitialize(validateFlags)
 
-	createCmd.Flags().BoolVarP(&dryRun, "dry-run", "d", false, "print manifests to stdout (default \"false\")")
+	// createCmd.Flags().BoolVarP(&dryRun, "dry-run", "d", false, "print manifests to stdout (default \"false\")")
 	createCmd.Flags().StringVarP(&image, "image", "i", "busybox:latest", "image name (e.g. glitchcrab/ubuntu-debug:latest)")
 	createCmd.Flags().BoolVar(&networkPolicy, "networkpolicy", false, "create NetworkPolicy (default \"false\")")
 	createCmd.Flags().BoolVar(&nodeExec, "node-exec", false, "spawn a container with root access to the node (default \"false\")")
@@ -179,8 +179,7 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 
 	// Create a SonarConfig
 	sonarConfig := sonarconfig.SonarConfig{
-		DryRun:            dryRun,
-		DryRunManifest:    [][]bytes,
+		// DryRun:            dryRun,
 		Image:             image,
 		Labels:            labels,
 		Name:              name,
