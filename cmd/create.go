@@ -180,7 +180,6 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 	// Create a SonarConfig
 	sonarConfig := sonarconfig.SonarConfig{
 		DryRun:            dryRun,
-		DryRunManifest:    [][]bytes,
 		Image:             image,
 		Labels:            labels,
 		Name:              name,
