@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.1] - 2023-05-05
+
 ### Changed
 
 - Update release workflows.
@@ -95,7 +97,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release; rough around the edges but usable.
 
-[Unreleased]: https://github.com/a7d-corp/sonar/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/a7d-corp/sonar/compare/v0.8.1...HEAD
+[0.8.1]: https://github.com/a7d-corp/sonar/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/a7d-corp/sonar/compare/v0.7.1...v0.8.0
 [0.7.1]: https://github.com/glitchcrab/sonar/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/glitchcrab/sonar/compare/v0.6.0...v0.7.0
