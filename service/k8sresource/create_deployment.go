@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -42,6 +42,20 @@ func NewDeployment(k8sClientSet *kubernetes.Clientset, ctx context.Context, sona
 		hostPID = true
 	}
 
+	securityContext := &corev1.SecurityContext{
+		Capabilities: &corev1.Capabilities{
+			Drop: []corev1.Capability{"ALL"},
+		},
+		Privileged:               &sonarConfig.Privileged,
+		RunAsUser:                &sonarConfig.PodUser,
+		RunAsGroup:               &sonarConfig.PodGroup,
+		RunAsNonRoot:             &sonarConfig.NonRoot,
+		AllowPrivilegeEscalation: &sonarConfig.PrivilegeEscalation,
+		SeccompProfile: &corev1.SeccompProfile{
+			Type: "RuntimeDefault",
+		},
+	}
+
 	// Define the Deployment
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -73,6 +87,7 @@ func NewDeployment(k8sClientSet *kubernetes.Clientset, ctx context.Context, sona
 									corev1.ResourceMemory: resource.MustParse("50Mi"),
 								},
 							},
+							SecurityContext: securityContext,
 						},
 					},
 					HostIPC:            hostIPC,
@@ -80,9 +95,6 @@ func NewDeployment(k8sClientSet *kubernetes.Clientset, ctx context.Context, sona
 					HostPID:            hostPID,
 					RestartPolicy:      corev1.RestartPolicyAlways,
 					ServiceAccountName: sonarConfig.Name,
-					SecurityContext: &corev1.PodSecurityContext{
-						RunAsUser: &sonarConfig.PodUser,
-					},
 				},
 			},
 		},
