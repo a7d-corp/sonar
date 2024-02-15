@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -35,15 +35,18 @@ const (
 
 var (
 	// dryRun            bool
-	image             string
-	networkPolicy     bool
-	nodeExec          bool
-	nodeName          string
-	podArgs           string
-	podCommand        string
-	podSecurityPolicy bool
-	podUser           int64
-	privileged        bool
+	image               string
+	networkPolicy       bool
+	nodeExec            bool
+	nodeName            string
+	podArgs             string
+	podCommand          string
+	podSecurityPolicy   bool
+	podGroup            int64
+	podUser             int64
+	privileged          bool
+	privilegeEscalation bool
+	runAsNonRoot        bool
 
 	createCmd = &cobra.Command{
 		Use:     "create",
@@ -147,8 +150,11 @@ func init() {
 	createCmd.Flags().StringVarP(&podArgs, "pod-args", "a", "24h", "args to pass to pod command")
 	createCmd.Flags().StringVarP(&podCommand, "pod-command", "c", "sleep", "pod command (aka image entrypoint)")
 	createCmd.Flags().BoolVar(&podSecurityPolicy, "podsecuritypolicy", false, "create PodSecurityPolicy (default \"false\")")
+	createCmd.Flags().Int64VarP(&podGroup, "pod-groupid", "g", 1000, "groupID to run the pod as")
 	createCmd.Flags().Int64VarP(&podUser, "pod-userid", "u", 1000, "userID to run the pod as")
-	createCmd.Flags().BoolVar(&privileged, "privileged", false, "run the container as root (assumes userID of 0) (default \"false\")")
+	createCmd.Flags().BoolVar(&privileged, "privileged", false, "run a privileged container (assumes userID of 0) (default \"false\")")
+	createCmd.Flags().BoolVar(&privilegeEscalation, "privilege-escalation", false, "allow privilege escalation (default \"false\")")
+	createCmd.Flags().BoolVar(&runAsNonRoot, "non-root", true, "run the container as non-root (assumes userID of 0) (default \"true\")")
 }
 
 func validateFlags() {
@@ -180,18 +186,20 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 	// Create a SonarConfig
 	sonarConfig := sonarconfig.SonarConfig{
 		// DryRun:            dryRun,
-		Image:             image,
-		Labels:            labels,
-		Name:              name,
-		Namespace:         namespace,
-		NetworkPolicy:     networkPolicy,
-		NodeExec:          nodeExec,
-		NodeName:          nodeName,
-		PodArgs:           podArgs,
-		PodCommand:        podCommand,
-		PodSecurityPolicy: podSecurityPolicy,
-		PodUser:           podUser,
-		Privileged:        privileged,
+		Image:               image,
+		Labels:              labels,
+		Name:                name,
+		Namespace:           namespace,
+		NetworkPolicy:       networkPolicy,
+		NodeExec:            nodeExec,
+		NodeName:            nodeName,
+		PodArgs:             podArgs,
+		PodCommand:          podCommand,
+		PodSecurityPolicy:   podSecurityPolicy,
+		PodGroup:            podGroup,
+		PodUser:             podUser,
+		Privileged:          privileged,
+		PrivilegeEscalation: privilegeEscalation,
 	}
 
 	// Create a clientset to interact with the cluster.
