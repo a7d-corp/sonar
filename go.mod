@@ -3,7 +3,7 @@ module github.com/glitchcrab/sonar
 go 1.18
 
 require (
-	github.com/sirupsen/logrus v1.9.0
+	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.5.0
 	k8s.io/api v0.21.3
 	k8s.io/apimachinery v0.21.3
