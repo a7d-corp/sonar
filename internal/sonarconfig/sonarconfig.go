@@ -11,7 +11,6 @@ type SonarConfig struct {
 	NonRoot             bool
 	PodArgs             string
 	PodCommand          string
-	PodSecurityPolicy   bool
 	PodGroup            int64
 	PodUser             int64
 	Privileged          bool

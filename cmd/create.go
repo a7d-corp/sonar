@@ -41,7 +41,6 @@ var (
 	nodeName            string
 	podArgs             string
 	podCommand          string
-	podSecurityPolicy   bool
 	podGroup            int64
 	podUser             int64
 	privileged          bool
@@ -90,12 +89,6 @@ Args to pass to the command.
 --pod-userid (default: 1000)
 
 User ID to run the container as (set in deployment's SecurityContext).
-
---podsecuritypolicy (default: false)
-
-Create a PodSecurityPolicy and the associated ClusterRole and Binding.
-The PSP will inherit the value set via --pod-userid and configure the
-minimum value of the RunAs range accordingly.
 
 --privileged (default: false)
 
@@ -149,7 +142,6 @@ func init() {
 	createCmd.Flags().StringVarP(&nodeName, "node-name", "", "", "node name to attempt to schedule the pod on")
 	createCmd.Flags().StringVarP(&podArgs, "pod-args", "a", "24h", "args to pass to pod command")
 	createCmd.Flags().StringVarP(&podCommand, "pod-command", "c", "sleep", "pod command (aka image entrypoint)")
-	createCmd.Flags().BoolVar(&podSecurityPolicy, "podsecuritypolicy", false, "create PodSecurityPolicy (default \"false\")")
 	createCmd.Flags().Int64VarP(&podGroup, "pod-groupid", "g", 1000, "groupID to run the pod as")
 	createCmd.Flags().Int64VarP(&podUser, "pod-userid", "u", 1000, "userID to run the pod as")
 	createCmd.Flags().BoolVar(&privileged, "privileged", false, "run a privileged container (assumes userID of 0) (default \"false\")")
@@ -179,7 +171,6 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 		}
 
 		networkPolicy = false
-		podSecurityPolicy = true
 		privileged = true
 	}
 
@@ -195,7 +186,6 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 		NodeName:            nodeName,
 		PodArgs:             podArgs,
 		PodCommand:          podCommand,
-		PodSecurityPolicy:   podSecurityPolicy,
 		PodGroup:            podGroup,
 		PodUser:             podUser,
 		Privileged:          privileged,
@@ -221,47 +211,6 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 			log.Warnf("serviceaccount \"%s/%s\" was not created: %w\n", sonarConfig.Namespace, sonarConfig.Name, err)
 		} else {
 			log.Infof("serviceaccount \"%s/%s\" created\n", sonarConfig.Namespace, sonarConfig.Name)
-		}
-	}
-
-	if sonarConfig.PodSecurityPolicy {
-		{
-			// Create a PodSecurityPolicy
-			err := k8sresource.NewPodSecurityPolicy(k8sClientSet, ctx, sonarConfig)
-			// Handle the response
-			if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {
-				log.Warnf("podsecuritypolicy \"%s\" already exists\n", sonarConfig.Name)
-			} else if err != nil {
-				log.Warnf("podsecuritypolicy \"%s\" was not created: %w\n", sonarConfig.Name, err)
-			} else {
-				log.Infof("podsecuritypolicy \"%s\" created\n", sonarConfig.Name)
-			}
-		}
-
-		{
-			// Create a ClusterRole
-			err := k8sresource.NewClusterRole(k8sClientSet, ctx, sonarConfig)
-			// Handle the response
-			if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {
-				log.Warnf("clusterrole \"%s\" already exists\n", sonarConfig.Name)
-			} else if err != nil {
-				log.Warnf("clusterrole \"%s\" was not created: %w\n", sonarConfig.Name, err)
-			} else {
-				log.Infof("clusterrole \"%s\" created\n", sonarConfig.Name)
-			}
-		}
-
-		{
-			// Create a ClusterRoleBinding
-			err := k8sresource.NewClusterRoleBinding(k8sClientSet, ctx, sonarConfig)
-			// Handle the response
-			if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {
-				log.Warnf("clusterrolebinding \"%s\" already exists\n", sonarConfig.Name)
-			} else if err != nil {
-				log.Warnf("clusterrolebinding \"%s\" was not created: %w\n", sonarConfig.Name, err)
-			} else {
-				log.Infof("clusterrolebinding \"%s\" created\n", sonarConfig.Name)
-			}
 		}
 	}
 
