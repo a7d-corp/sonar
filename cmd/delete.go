@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,7 +26,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	networkingv1 "k8s.io/api/networking/v1"
-	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -119,65 +118,6 @@ func deleteSonarDeployment(cmd *cobra.Command, args []string) {
 	// Filter resources by Sonar labels.
 	listOpts := metav1.ListOptions{
 		LabelSelector: strings.Join(labelSlice, ","),
-	}
-
-	{
-		// Get PodSecurityPolicies in the cluster which match the internal Sonar labels.
-		inClusterPsps := []policyv1beta1.PodSecurityPolicy{}
-		psps, err := k8sClientSet.PolicyV1beta1().PodSecurityPolicies().List(ctx, listOpts)
-		if err != nil {
-			log.Warnf("%w", err) // TODO: improve error logging here
-		}
-		inClusterPsps = append(inClusterPsps, psps.Items...)
-
-		// Range over discovered PodSecurityPolicies and see if any match.
-		for _, psp := range inClusterPsps {
-			if strings.HasPrefix(psp.Name, sonarConfig.Name) {
-				// If a matching PodSecurityPolicy is found then we also need to remove the
-				// ClusterRole and Binding.
-
-				{
-					// Delete the PodSecurityPolicy
-					err := k8sresource.DeletePodSecurityPolicy(k8sClientSet, ctx, sonarConfig, force)
-					if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonNotFound {
-						log.Info("no matching podsecuritypolicy found; skipping deletion")
-					} else if err != nil {
-						log.Warnf("podsecuritypolicy \"%s\" failed deletion: %w", sonarConfig.Name, err)
-					} else {
-						log.Infof("deleting podsecuritypolicy")
-						deletedResources = append(deletedResources, "podsecuritypolicy")
-					}
-				}
-
-				{
-					// Delete the ClusterRoleBinding
-					err := k8sresource.DeleteClusterRoleBinding(k8sClientSet, ctx, sonarConfig, force)
-					if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonNotFound {
-						log.Info("no matching clusterrolebinding found; skipping deletion")
-					} else if err != nil {
-						log.Warnf("clusterrolebinding \"%s\" failed deletion: %w", sonarConfig.Name, err)
-					} else {
-						log.Infof("deleting clusterrolebinding")
-						deletedResources = append(deletedResources, "clusterrolebinding")
-					}
-				}
-
-				{
-					// Delete the ClusterRole
-					err := k8sresource.DeleteClusterRole(k8sClientSet, ctx, sonarConfig, force)
-					if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonNotFound {
-						log.Info("no matching clusterrole found; skipping deletion")
-					} else if err != nil {
-						log.Warnf("clusterrole \"%s\" failed deletion: %w", sonarConfig.Name, err)
-					} else {
-						log.Infof("deleting clusterrole")
-						deletedResources = append(deletedResources, "clusterrole")
-					}
-				}
-			} else {
-				log.Info("no matching podsecuritypolicy found; skipping deletion")
-			}
-		}
 	}
 
 	{
