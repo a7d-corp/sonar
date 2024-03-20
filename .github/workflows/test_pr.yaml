@@ -27,3 +27,10 @@ jobs:
         uses: helm/kind-action@v1
       - name: 'test deploying with sonar'
         run: ./sonar create -n default -N kind-test -i glitchcrab/ubuntu-debug
+      - name: 'wait for deployment to start'
+        uses: jupyterhub/action-k8s-await-workloads@v3
+        with:
+          workloads: "deploy/sonar-kind-test"
+          namespace: "default"
+          timeout: 60
+          max-restarts: 0
