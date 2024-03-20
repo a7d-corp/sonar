@@ -18,7 +18,7 @@ jobs:
       - uses: trstringer/manual-approval@v1
         with:
           secret: ${{ github.TOKEN }}
-          approvers: admins
+          approvers: glitchcrab
           minimum-approvals: 1
           issue-title: "Approval required for testing in KinD"
           issue-body: "Please approve or deny creation of a KinD cluster for testing"
