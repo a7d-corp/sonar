@@ -15,7 +15,8 @@ jobs:
         run: go build -o sonar
       - name: 'run built binary'
         run: ./sonar version
-      - uses: trstringer/manual-approval@v1
+      - name: 'wait for approval'
+        uses: trstringer/manual-approval@v1
         with:
           secret: ${{ github.TOKEN }}
           approvers: glitchcrab
@@ -23,14 +24,15 @@ jobs:
           issue-title: "Approval required for testing in KinD"
           issue-body: "Please approve or deny creation of a KinD cluster for testing"
           exclude-workflow-initiator-as-approver: false
-      - name: Create kind cluster
+      - name: 'create kind cluster'
         uses: helm/kind-action@v1
+        with:
+          cluster_name: 'sonar-test'
       - name: 'test deploying with sonar'
-        run: ./sonar create -n default -N kind-test -i glitchcrab/ubuntu-debug
+        run: ./sonar create -n default -N ci-test -i glitchcrab/ubuntu-debug
       - name: 'wait for deployment to start'
         uses: jupyterhub/action-k8s-await-workloads@v3
         with:
-          workloads: "deploy/sonar-kind-test"
+          workloads: "deploy/sonar-ci-test"
           namespace: "default"
           timeout: 60
-          max-restarts: 0
