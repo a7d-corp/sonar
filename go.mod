@@ -1,6 +1,8 @@
 module github.com/glitchcrab/sonar
 
-go 1.18
+go 1.21
+
+toolchain go1.22.1
 
 require (
 	github.com/sirupsen/logrus v1.9.3
