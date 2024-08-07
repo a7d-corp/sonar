@@ -56,6 +56,15 @@ func NewDeployment(k8sClientSet *kubernetes.Clientset, ctx context.Context, sona
 		},
 	}
 
+	podSecurityContext := &corev1.PodSecurityContext{
+		RunAsUser:    &sonarConfig.PodUser,
+		RunAsGroup:   &sonarConfig.PodGroup,
+		RunAsNonRoot: &sonarConfig.NonRoot,
+		SeccompProfile: &corev1.SeccompProfile{
+			Type: "RuntimeDefault",
+		},
+	}
+
 	// Define the Deployment
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -95,6 +104,7 @@ func NewDeployment(k8sClientSet *kubernetes.Clientset, ctx context.Context, sona
 					HostPID:            hostPID,
 					RestartPolicy:      corev1.RestartPolicyAlways,
 					ServiceAccountName: sonarConfig.Name,
+					SecurityContext:    podSecurityContext,
 				},
 			},
 		},

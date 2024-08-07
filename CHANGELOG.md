@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Added pod security context to ensure the pod runs as a non-root user.
+
 ## [0.10.0] - 2024-03-21
 
 ### Removed
