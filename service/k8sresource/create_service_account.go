@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,6 +18,7 @@ package k8sresource
 import (
 	"context"
 
+	"github.com/glitchcrab/sonar/internal/helpers"
 	"github.com/glitchcrab/sonar/internal/sonarconfig"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -36,6 +37,11 @@ func NewServiceAccount(k8sClientSet *kubernetes.Clientset, ctx context.Context, 
 			Name:      sonarConfig.Name,
 			Namespace: sonarConfig.Namespace,
 		},
+	}
+
+	// If dry-run is enabled, print the manifest and return
+	if sonarConfig.DryRun {
+		return helpers.PrintManifestYAML(sa)
 	}
 
 	_, err = k8sClientSet.CoreV1().ServiceAccounts(sonarConfig.Namespace).Create(ctx, sa, metav1.CreateOptions{})
