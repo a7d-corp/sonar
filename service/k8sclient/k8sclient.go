@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,6 +16,7 @@ limitations under the License.
 package k8sclient
 
 import (
+	"os"
 	"path/filepath"
 
 	"k8s.io/client-go/kubernetes"
@@ -29,10 +30,16 @@ import (
 func New(kubeContext, kubeConfig string) (*kubernetes.Clientset, error) {
 	// Set the kubeconfig to the default location if the path wasn't provided.
 	if kubeConfig == "" {
-		if home := homedir.HomeDir(); home != "" {
+		// Check if KUBECONFIG environment variable is set
+		if envKubeConfig := os.Getenv("KUBECONFIG"); envKubeConfig != "" {
+			kubeConfig = envKubeConfig
+		} else if home := homedir.HomeDir(); home != "" {
 			kubeConfig = filepath.Join(home, ".kube", "config")
 		}
 	}
+
+	// Inform the user which kubeconfig file is being used
+	log.Infof("using kubeconfig: %s", kubeConfig)
 
 	// Set defaults for creating a new ClientConfig.
 	loadingRules := &clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeConfig}

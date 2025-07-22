@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Update Arch PKGBUILD for 0.11.0.
+- Read shell KUBECONFIG env var if kubeconfig flag not provided.
 
 ## [0.11.0] - 2024-08-07
 
