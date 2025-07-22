@@ -1,6 +1,7 @@
 package sonarconfig
 
 type SonarConfig struct {
+	DryRun              bool
 	Image               string
 	Labels              map[string]string
 	Name                string

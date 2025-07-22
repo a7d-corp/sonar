@@ -27,6 +27,7 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 )
 
 const (
@@ -34,7 +35,7 @@ const (
 )
 
 var (
-	// dryRun            bool
+	dryRun              bool
 	image               string
 	networkPolicy       bool
 	nodeExec            bool
@@ -126,7 +127,10 @@ all ingress and traffic to the Sonar pod.
 
 "sonar create --node-exec true --node-name worker2 \
     --pod-userid 0" - creates a pod with root access to the node named
-worker2.`,
+worker2.
+
+"sonar create --dry-run" - prints the generated Kubernetes manifests
+to stdout without applying them to the cluster.`,
 		Run: createSonarDeployment,
 	}
 )
@@ -135,7 +139,7 @@ func init() {
 	rootCmd.AddCommand(createCmd)
 	cobra.OnInitialize(validateFlags)
 
-	// createCmd.Flags().BoolVarP(&dryRun, "dry-run", "d", false, "print manifests to stdout (default \"false\")")
+	createCmd.Flags().BoolVarP(&dryRun, "dry-run", "d", false, "print generated manifests to stdout only(default \"false\")")
 	createCmd.Flags().StringVarP(&image, "image", "i", "busybox:latest", "image name (e.g. glitchcrab/ubuntu-debug:latest)")
 	createCmd.Flags().BoolVar(&networkPolicy, "networkpolicy", false, "create NetworkPolicy (default \"false\")")
 	createCmd.Flags().BoolVar(&nodeExec, "node-exec", false, "spawn a container with root access to the node (default \"false\")")
@@ -176,7 +180,7 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 
 	// Create a SonarConfig
 	sonarConfig := sonarconfig.SonarConfig{
-		// DryRun:            dryRun,
+		DryRun:              dryRun,
 		Image:               image,
 		Labels:              labels,
 		Name:                name,
@@ -192,10 +196,14 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 		PrivilegeEscalation: privilegeEscalation,
 	}
 
-	// Create a clientset to interact with the cluster.
-	k8sClientSet, err := k8sclient.New(kubeContext, kubeConfig)
-	if err != nil {
-		log.Fatal(err) // TODO: better logging
+	// Create a clientset to interact with the cluster (only if not in dry-run mode).
+	var k8sClientSet *kubernetes.Clientset
+	var err error
+	if !sonarConfig.DryRun {
+		k8sClientSet, err = k8sclient.New(kubeContext, kubeConfig)
+		if err != nil {
+			log.Fatal(err) // TODO: better logging
+		}
 	}
 
 	// Create a context
@@ -205,12 +213,18 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 		// Create a ServiceAccount
 		err := k8sresource.NewServiceAccount(k8sClientSet, ctx, sonarConfig)
 		// Handle the response
-		if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {
-			log.Warnf("serviceaccount \"%s/%s\" already exists\n", sonarConfig.Namespace, sonarConfig.Name)
-		} else if err != nil {
-			log.Warnf("serviceaccount \"%s/%s\" was not created: %w\n", sonarConfig.Namespace, sonarConfig.Name, err)
+		if sonarConfig.DryRun {
+			if err != nil {
+				log.Warnf("serviceaccount \"%s/%s\" manifest generation failed: %v\n", sonarConfig.Namespace, sonarConfig.Name, err)
+			}
 		} else {
-			log.Infof("serviceaccount \"%s/%s\" created\n", sonarConfig.Namespace, sonarConfig.Name)
+			if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {
+				log.Warnf("serviceaccount \"%s/%s\" already exists\n", sonarConfig.Namespace, sonarConfig.Name)
+			} else if err != nil {
+				log.Warnf("serviceaccount \"%s/%s\" was not created: %w\n", sonarConfig.Namespace, sonarConfig.Name, err)
+			} else {
+				log.Infof("serviceaccount \"%s/%s\" created\n", sonarConfig.Namespace, sonarConfig.Name)
+			}
 		}
 	}
 
@@ -218,12 +232,18 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 		// Create a NetworkPolicy
 		err := k8sresource.NewNetworkPolicy(k8sClientSet, ctx, sonarConfig)
 		// Handle the response
-		if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {
-			log.Warnf("networkpolicy \"%s\" already exists\n", sonarConfig.Name)
-		} else if err != nil {
-			log.Warnf("networkpolicy \"%s\" was not created: %w\n", sonarConfig.Name, err)
+		if sonarConfig.DryRun {
+			if err != nil {
+				log.Warnf("networkpolicy \"%s\" manifest generation failed: %v\n", sonarConfig.Name, err)
+			}
 		} else {
-			log.Infof("networkpolicy \"%s\" created\n", sonarConfig.Name)
+			if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {
+				log.Warnf("networkpolicy \"%s\" already exists\n", sonarConfig.Name)
+			} else if err != nil {
+				log.Warnf("networkpolicy \"%s\" was not created: %w\n", sonarConfig.Name, err)
+			} else {
+				log.Infof("networkpolicy \"%s\" created\n", sonarConfig.Name)
+			}
 		}
 	}
 
@@ -231,12 +251,18 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 		// Create a Deployment
 		err := k8sresource.NewDeployment(k8sClientSet, ctx, sonarConfig)
 		// Handle the response
-		if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {
-			log.Warnf("deployment \"%s/%s\" already exists\n", sonarConfig.Namespace, sonarConfig.Name)
-		} else if err != nil {
-			log.Warnf("deployment \"%s/%s\" was not created: %w\n", sonarConfig.Namespace, sonarConfig.Name, err)
+		if sonarConfig.DryRun {
+			if err != nil {
+				log.Warnf("deployment \"%s/%s\" manifest generation failed: %v\n", sonarConfig.Namespace, sonarConfig.Name, err)
+			}
 		} else {
-			log.Infof("deployment \"%s/%s\" created\n", sonarConfig.Namespace, sonarConfig.Name)
+			if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {
+				log.Warnf("deployment \"%s/%s\" already exists\n", sonarConfig.Namespace, sonarConfig.Name)
+			} else if err != nil {
+				log.Warnf("deployment \"%s/%s\" was not created: %w\n", sonarConfig.Namespace, sonarConfig.Name, err)
+			} else {
+				log.Infof("deployment \"%s/%s\" created\n", sonarConfig.Namespace, sonarConfig.Name)
+			}
 		}
 	}
 }

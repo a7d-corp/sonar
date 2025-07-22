@@ -19,6 +19,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/glitchcrab/sonar/internal/helpers"
 	"github.com/glitchcrab/sonar/internal/sonarconfig"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -67,6 +68,10 @@ func NewDeployment(k8sClientSet *kubernetes.Clientset, ctx context.Context, sona
 
 	// Define the Deployment
 	deployment := &appsv1.Deployment{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "apps/v1",
+			Kind:       "Deployment",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Labels:    sonarConfig.Labels,
 			Name:      sonarConfig.Name,
@@ -148,6 +153,11 @@ func NewDeployment(k8sClientSet *kubernetes.Clientset, ctx context.Context, sona
 				MountPath: "/host",
 			},
 		}
+	}
+
+	// If dry-run is enabled, print the manifest and return
+	if sonarConfig.DryRun {
+		return helpers.PrintManifestYAML(deployment)
 	}
 
 	// Create the Deployment
