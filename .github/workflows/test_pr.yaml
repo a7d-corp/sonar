@@ -10,7 +10,7 @@ jobs:
       - name: 'checkout'
         uses: actions/checkout@v5
       - name: 'setup go'
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
       - name: 'build binary'
         run: go build -o sonar
       - name: 'run built binary'
