@@ -188,6 +188,7 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 		NetworkPolicy:       networkPolicy,
 		NodeExec:            nodeExec,
 		NodeName:            nodeName,
+		NonRoot:             runAsNonRoot,
 		PodArgs:             podArgs,
 		PodCommand:          podCommand,
 		PodGroup:            podGroup,
