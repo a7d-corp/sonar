@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Ensure non-root flag makes it into the SonarConfig.
+
 ## [0.13.0] - 2025-09-01
 
 ### Added
