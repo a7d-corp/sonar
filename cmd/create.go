@@ -183,7 +183,7 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 		DryRun:              dryRun,
 		Image:               image,
 		Labels:              labels,
-		Name:                name,
+		Name:                fullName,
 		Namespace:           namespace,
 		NetworkPolicy:       networkPolicy,
 		NodeExec:            nodeExec,

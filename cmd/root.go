@@ -31,6 +31,7 @@ const (
 )
 
 var (
+	fullName    string
 	kubeConfig  string
 	kubeContext string
 	labels      = map[string]string{
@@ -62,12 +63,13 @@ If that is not set, Sonar will use the default kubeconfig file location.
 
 Name of the kubernetes context to use.
 
---name (default: 'debug')
+--name
 
-Name given to all the created resources. This will be automatically
-prepended with 'sonar-', so a provided name of 'test' will result
-in a deployment named 'sonar-debug'. Provided name can be a max of
-50 characters.
+Name given to all the created resources. If provided then this will
+be automatically prepended with 'sonar-' for ease of identification.
+For example, a provided name of 'test' will result in a deployment named
+'sonar-test'. Provided name can be a max of 50 characters. If no name is
+provided then resource names will start with 'sonar-'.
 
 --namespace (default: 'default')
 
@@ -86,7 +88,7 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&kubeConfig, "kubeconfig", "", "absolute path to kubeconfig file (default: '/home/$user/.kube/config')")
 	rootCmd.PersistentFlags().StringVar(&kubeContext, "context", "", "context to use")
-	rootCmd.PersistentFlags().StringVarP(&name, "name", "N", "debug", "resource name (max 50 characters) (automatically prepended with 'sonar-'")
+	rootCmd.PersistentFlags().StringVarP(&name, "name", "N", "", "resource name (max 50 characters) (automatically prepended with 'sonar-')")
 	rootCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "default", "namespace to operate in")
 }
 
@@ -107,7 +109,11 @@ func initConfig() {
 	}
 
 	// Prepend provided name with 'sonar-' for ease of identifying Sonar deployments.
-	name = fmt.Sprintf("%s-%s", nameStub, name)
+	if name != "" {
+		fullName = fmt.Sprintf("%s-%s", nameStub, name)
+	} else {
+		fullName = nameStub
+	}
 
 	// If the user has provided a namespace then validate that it looks sane.
 	if rootCmd.PersistentFlags().Lookup("namespace").Changed {
