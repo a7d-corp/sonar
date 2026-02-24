@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.13.1] - 2026-02-23
+### Changed
 
-## [0.13.1] - 2026-02-20
+- Remove default name so resources begin with 'sonar' if a name is not provided.
 
 ## [0.13.1] - 2026-02-20
 
