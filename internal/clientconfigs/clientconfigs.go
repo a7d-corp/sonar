@@ -1,4 +1,4 @@
-package sonarconfig
+package clientconfigs
 
 type SonarConfig struct {
 	DryRun              bool

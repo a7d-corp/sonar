@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Remove default name so resources begin with 'sonar' if a name is not provided.
+- Refactor internal config management to be more flexible.
 
 ## [0.13.1] - 2026-02-20
 

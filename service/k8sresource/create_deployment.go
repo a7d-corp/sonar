@@ -20,7 +20,7 @@ import (
 	"strings"
 
 	"github.com/glitchcrab/sonar/internal/helpers"
-	"github.com/glitchcrab/sonar/internal/sonarconfig"
+	"github.com/glitchcrab/sonar/internal/clientconfigs"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -35,7 +35,7 @@ var (
 	replicas int32 = 1
 )
 
-func NewDeployment(k8sClientSet *kubernetes.Clientset, ctx context.Context, sonarConfig sonarconfig.SonarConfig) (err error) {
+func NewDeployment(k8sClientSet *kubernetes.Clientset, ctx context.Context, sonarConfig clientconfigs.SonarConfig) (err error) {
 	// Create container in the host namespaces if node-exec is set.
 	if sonarConfig.NodeExec {
 		hostIPC = true

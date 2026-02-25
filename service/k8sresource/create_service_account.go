@@ -19,13 +19,13 @@ import (
 	"context"
 
 	"github.com/glitchcrab/sonar/internal/helpers"
-	"github.com/glitchcrab/sonar/internal/sonarconfig"
+	"github.com/glitchcrab/sonar/internal/clientconfigs"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
-func NewServiceAccount(k8sClientSet *kubernetes.Clientset, ctx context.Context, sonarConfig sonarconfig.SonarConfig) (err error) {
+func NewServiceAccount(k8sClientSet *kubernetes.Clientset, ctx context.Context, sonarConfig clientconfigs.SonarConfig) (err error) {
 	// Define the ServiceAccount
 	sa := &corev1.ServiceAccount{
 		TypeMeta: metav1.TypeMeta{
