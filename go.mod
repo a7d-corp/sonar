@@ -2,7 +2,7 @@ module github.com/glitchcrab/sonar
 
 go 1.24.0
 
-toolchain go1.25.3
+toolchain go1.26.0
 
 require (
 	github.com/sirupsen/logrus v1.9.3
