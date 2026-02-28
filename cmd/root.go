@@ -109,6 +109,9 @@ func initConfig() {
 		}
 	}
 
+	// Add the provided name to the labels map for tagging generated resources
+	labels["name"] = name
+
 	// Prepend provided name with 'sonar-' for ease of identifying Sonar deployments.
 	if name != "" {
 		fullName = fmt.Sprintf("%s-%s", nameStub, name)
