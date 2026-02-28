@@ -18,13 +18,13 @@ package k8sresource
 import (
 	"context"
 
-	"github.com/glitchcrab/sonar/internal/sonarconfig"
+	"github.com/glitchcrab/sonar/internal/clientconfigs"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
-func NewClusterRoleBinding(k8sClientSet *kubernetes.Clientset, ctx context.Context, sonarConfig sonarconfig.SonarConfig) (err error) {
+func NewClusterRoleBinding(k8sClientSet *kubernetes.Clientset, ctx context.Context, sonarConfig clientconfigs.SonarConfig) (err error) {
 	// Define the ClusterRoleBinding
 	crb := &rbacv1.ClusterRoleBinding{
 		TypeMeta: metav1.TypeMeta{

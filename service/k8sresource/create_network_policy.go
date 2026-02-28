@@ -19,13 +19,13 @@ import (
 	"context"
 
 	"github.com/glitchcrab/sonar/internal/helpers"
-	"github.com/glitchcrab/sonar/internal/sonarconfig"
+	"github.com/glitchcrab/sonar/internal/clientconfigs"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
-func NewNetworkPolicy(k8sClientSet *kubernetes.Clientset, ctx context.Context, sonarConfig sonarconfig.SonarConfig) (err error) {
+func NewNetworkPolicy(k8sClientSet *kubernetes.Clientset, ctx context.Context, sonarConfig clientconfigs.SonarConfig) (err error) {
 	// Define the NetworkPolicy
 	np := &networkingv1.NetworkPolicy{
 		TypeMeta: metav1.TypeMeta{

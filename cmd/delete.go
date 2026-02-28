@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/glitchcrab/sonar/internal/sonarconfig"
+	"github.com/glitchcrab/sonar/internal/clientconfigs"
 	"github.com/glitchcrab/sonar/service/k8sclient"
 	"github.com/glitchcrab/sonar/service/k8sresource"
 	log "github.com/sirupsen/logrus"
@@ -73,7 +73,7 @@ func init() {
 
 func deleteSonarDeployment(cmd *cobra.Command, args []string) {
 	// Create a SonarConfig and populate it with enough variables for deletion.
-	sonarConfig := sonarconfig.SonarConfig{
+	sonarConfig := clientconfigs.SonarConfig{
 		Labels:    labels,
 		Name:      name,
 		Namespace: namespace,

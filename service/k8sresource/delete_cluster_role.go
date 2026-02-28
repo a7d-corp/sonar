@@ -19,12 +19,12 @@ import (
 	"context"
 
 	"github.com/glitchcrab/sonar/internal/helpers"
-	"github.com/glitchcrab/sonar/internal/sonarconfig"
+	"github.com/glitchcrab/sonar/internal/clientconfigs"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
-func DeleteClusterRole(k8sClientSet *kubernetes.Clientset, ctx context.Context, sonarConfig sonarconfig.SonarConfig, force bool) (err error) {
+func DeleteClusterRole(k8sClientSet *kubernetes.Clientset, ctx context.Context, sonarConfig clientconfigs.SonarConfig, force bool) (err error) {
 	// Set foreground deletion so the client waits for confirmation before proceeding
 	deletePolicy := metav1.DeletePropagationForeground
 	deleteOptions := metav1.DeleteOptions{

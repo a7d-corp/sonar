@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/glitchcrab/sonar/internal/sonarconfig"
+	"github.com/glitchcrab/sonar/internal/clientconfigs"
 	"github.com/glitchcrab/sonar/service/k8sclient"
 	"github.com/glitchcrab/sonar/service/k8sresource"
 	log "github.com/sirupsen/logrus"
@@ -179,7 +179,7 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 	}
 
 	// Create a SonarConfig
-	sonarConfig := sonarconfig.SonarConfig{
+	sonarConfig := clientconfigs.SonarConfig{
 		DryRun:              dryRun,
 		Image:               image,
 		Labels:              labels,

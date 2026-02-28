@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Remove default name so resources begin with 'sonar' if a name is not provided.
+- Refactor internal config management to be more flexible.
+- Stop defaulting to 'default' namespace if none provided; use the current context's namespace instead.
+- Refactor kubeconfig detection.
+- Label deployments with the provided name.
 
 ## [0.13.1] - 2026-02-20
 
