@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"regexp"
 
+	"github.com/glitchcrab/sonar/service/k8sclient"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -89,7 +90,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&kubeConfig, "kubeconfig", "", "absolute path to kubeconfig file (default: '/home/$user/.kube/config')")
 	rootCmd.PersistentFlags().StringVar(&kubeContext, "context", "", "context to use")
 	rootCmd.PersistentFlags().StringVarP(&name, "name", "N", "", "resource name (max 50 characters) (automatically prepended with 'sonar-')")
-	rootCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "default", "namespace to operate in")
+	rootCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "", "namespace to operate in")
 }
 
 func initConfig() {
@@ -121,6 +122,15 @@ func initConfig() {
 		ok, _ := regexp.MatchString(namespaceRegex, namespace)
 		if !ok {
 			log.Fatal("namespaces can only contain alphanumeric characters and hyphens")
+		}
+	}
+
+	// If the namespace was not provided, get the namespace from the context
+	var err error
+	if namespace == "" {
+		namespace, err = k8sclient.GetNamespace(kubeConfig, kubeContext)
+		if err != nil {
+			log.Fatal(err) // TODO: better logging
 		}
 	}
 }

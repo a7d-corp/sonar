@@ -64,3 +64,36 @@ func New(kubeContext, kubeConfig string) (*kubernetes.Clientset, error) {
 
 	return k8sClientSet, err
 }
+
+// GetNamespace returns the current namespace from a Kubeconfig
+func GetNamespace(kubeConfigPath, kubeContext string) (string, error) {
+	var err error
+	var context string
+
+	// Discover the kubeconfig if an explicit path wasn't provided
+	if kubeConfigPath == "" {
+		kubeConfigPath, err = findKubeConfig()
+		if err != nil {
+			return "", err
+		}
+	}
+
+	kubeConfig, err := clientcmd.LoadFromFile(kubeConfigPath)
+	if err != nil {
+		return "", err
+	}
+
+	// Use the context if it was provided, otherwise use the current context
+	if kubeContext != "" {
+		context = kubeContext
+	} else {
+		context = kubeConfig.CurrentContext
+	}
+
+	namespace := kubeConfig.Contexts[context].Namespace
+	if namespace == "" {
+		return "", errors.New(fmt.Sprintf("No current context found in kubeconfig: %s", kubeConfigPath))
+	}
+
+	return namespace, nil
+}
