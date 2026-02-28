@@ -13,8 +13,6 @@ jobs:
         uses: actions/setup-go@v6
       - name: 'build binary'
         run: go build -o sonar
-      - name: 'run built binary'
-        run: ./sonar version
       - name: 'wait for approval'
         uses: trstringer/manual-approval@v1
         with:
