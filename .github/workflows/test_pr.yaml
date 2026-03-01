@@ -34,3 +34,5 @@ jobs:
           workloads: "deploy/sonar-ci-test"
           namespace: "default"
           timeout: 60
+      - name: 'test teardown with sonar'
+        run: ./sonar destroy -n default -N ci-test -f

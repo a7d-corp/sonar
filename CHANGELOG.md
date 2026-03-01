@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Stop defaulting to 'default' namespace if none provided; use the current context's namespace instead.
 - Refactor kubeconfig detection.
 - Label deployments with the provided name.
+- Add deletion step to Github Action.
+
+### Fixed
+
+- Fix resource selection during deletion.
 
 ## [0.13.1] - 2026-02-20
 
