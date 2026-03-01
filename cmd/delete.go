@@ -75,7 +75,7 @@ func deleteSonarDeployment(cmd *cobra.Command, args []string) {
 	// Create a SonarConfig and populate it with enough variables for deletion.
 	sonarConfig := clientconfigs.SonarConfig{
 		Labels:    labels,
-		Name:      name,
+		Name:      fullName,
 		Namespace: namespace,
 	}
 
