@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactor kubeconfig detection.
 - Label deployments with the provided name.
 - Add deletion step to Github Action.
+- Improve error when namespace could not be discovered.
 
 ### Fixed
 
