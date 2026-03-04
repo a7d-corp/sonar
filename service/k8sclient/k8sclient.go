@@ -23,6 +23,7 @@ import (
 	"github.com/mitchellh/go-homedir"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
+	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
 	log "github.com/sirupsen/logrus"
@@ -40,7 +41,32 @@ func findKubeConfig() (string, error) {
 		return "", err
 	}
 
+	// Inform the user which kubeconfig file is being used
+	log.Infof("using kubeconfig: %s", path)
+
 	return path, nil
+}
+
+// NewRestclient creates a new restclient from the provided kubeconfig and/or values
+func NewRestclient(kubeConfigPath, kubeContext string) (*restclient.Config, error) {
+	var err error
+
+	// Set defaults for creating a new ClientConfig.
+	loadingRules := &clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeConfigPath}
+	configOverrides := &clientcmd.ConfigOverrides{}
+
+	// Set the context if it was provided.
+	if kubeContext != "" {
+		configOverrides = &clientcmd.ConfigOverrides{CurrentContext: kubeContext}
+	}
+
+	// Create the ClientConfig.
+	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides).ClientConfig()
+	if err != nil {
+		return config, err
+	}
+
+	return config, err
 }
 
 func New(kubeContext, kubeConfigPath string) (*kubernetes.Clientset, error) {
@@ -54,20 +80,7 @@ func New(kubeContext, kubeConfigPath string) (*kubernetes.Clientset, error) {
 		}
 	}
 
-	// Inform the user which kubeconfig file is being used
-	log.Infof("using kubeconfig: %s", kubeConfigPath)
-
-	// Set defaults for creating a new ClientConfig.
-	loadingRules := &clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeConfigPath}
-	configOverrides := &clientcmd.ConfigOverrides{}
-
-	// Set the context if it was provided.
-	if kubeContext != "" {
-		configOverrides = &clientcmd.ConfigOverrides{CurrentContext: kubeContext}
-	}
-
-	// Create the ClientConfig.
-	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides).ClientConfig()
+	config, err := NewRestclient(kubeConfigPath, kubeContext)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Label deployments with the provided name.
 - Add deletion step to Github Action.
 - Improve error when namespace could not be discovered.
+- Refactor k8sclient creation to be more flexible.
 
 ### Fixed
 
