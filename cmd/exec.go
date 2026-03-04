@@ -134,6 +134,13 @@ func execIntoSonarPod(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
-	fmt.Println(selectedPod)
+	// Trim the namespace from the selected pod.
+	_, selectedPod, _ = strings.Cut(selectedPod, "/")
 
+	for _, targetPod := range discoveredPods {
+		if targetPod.Name == selectedPod {
+			//ExecIntoPod(targetPod.Namespace, targetPod.Name)
+			fmt.Printf("execing into pod %s in namespace %s\n", targetPod.Name, targetPod.Namespace)
+		}
+	}
 }
