@@ -18,6 +18,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -25,22 +26,28 @@ import (
 	"github.com/glitchcrab/sonar/service/k8sclient"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/scheme"
+	restclient "k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/remotecommand"
 )
 
 var (
 	searchLabels    = []string{"owner=sonar"}
 	searchNamespace string
+	targetPod       string
+	targetNamespace string
 
 	execCmd = &cobra.Command{
 		Use:   "exec",
 		Short: "Execs into a Sonar debug container",
-		Long: `Exec attempts to exec into a Sonar debug container using
-the current (or provided) kubectl context. It searches for pods with the
-label 'owner=sonar' and uses fzf to allow the user to select a pod to
-exec into. The use can further narrow the selection by providing a name
-via the --name/-N flag and also the namespace via the --namespace/-n flag.
+		Long: `Exec attempts to exec into a Sonar debug container using the current
+(or provided) kubectl context. It searches for pods with the label
+'owner=sonar' and prompts the user to select a pod to exec into. The
+user can further narrow the selection by providing a name via the
+--name/-N flag and also the namespace via the --namespace/-n flag.
 
 All flags are optional.
 
@@ -48,13 +55,11 @@ Global flags:
 
 Run "sonar help" in order to see flags which apply to all subcommands.`,
 		Example: `
-"sonar exec" - finds all Sonar pods across all namespaces. If more than
-one is found then user is prompted to select one.
+"sonar exec" - finds all Sonar pods across all namespaces.
 
 "sonar exec --name test --namespace kube-system" - finds all Sonar pods
-with the name 'test' in namespace 'kube-system'. If more than one is
-found then the user is prompted to select one.`,
-		Run: execIntoSonarPod,
+with the name 'test' in namespace 'kube-system'.`,
+		Run: execCommand,
 	}
 )
 
@@ -68,9 +73,7 @@ func init() {
 	rootCmd.AddCommand(execCmd)
 }
 
-func execIntoSonarPod(cmd *cobra.Command, args []string) {
-	log.Info("exec command is not yet implemented")
-
+func execCommand(cmd *cobra.Command, args []string) {
 	// Create a clientset to interact with the cluster (only if not in dry-run mode).
 	var k8sClientSet *kubernetes.Clientset
 	var err error
@@ -137,10 +140,58 @@ func execIntoSonarPod(cmd *cobra.Command, args []string) {
 	// Trim the namespace from the selected pod.
 	_, selectedPod, _ = strings.Cut(selectedPod, "/")
 
-	for _, targetPod := range discoveredPods {
-		if targetPod.Name == selectedPod {
+	for _, pod := range discoveredPods {
+		if pod.Name == selectedPod {
+			targetPod = pod.Name
+			targetNamespace = pod.Namespace
 			//ExecIntoPod(targetPod.Namespace, targetPod.Name)
-			fmt.Printf("execing into pod %s in namespace %s\n", targetPod.Name, targetPod.Namespace)
 		}
 	}
+
+	restClient, err := k8sclient.NewRestclient(kubeConfig, kubeContext)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = execIntoPod(ctx, k8sClientSet, restClient, targetPod, targetNamespace, os.Stdin, os.Stdout, os.Stderr)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+// execIntoPod execs into a pod and gets a shell
+func execIntoPod(ctx context.Context, k8sClientSet *kubernetes.Clientset, restClient *restclient.Config, targetPod, targetNamespace string, stdin io.Reader, stdout io.Writer, stderr io.Writer) error {
+	command := []string{"/bin/sh"}
+	request := k8sClientSet.CoreV1().RESTClient().Post().Resource("pods").Name(targetPod).Namespace(targetNamespace).SubResource("exec")
+	options := &corev1.PodExecOptions{
+		Command: command,
+		Stdin:   true,
+		Stdout:  true,
+		Stderr:  true,
+		TTY:     true,
+	}
+	request.VersionedParams(
+		options,
+		scheme.ParameterCodec,
+	)
+
+	executor, err := remotecommand.NewSPDYExecutor(restClient, "POST", request.URL())
+	if err != nil {
+		return err
+	}
+
+	streamOpts := remotecommand.StreamOptions{
+		Stdin:  stdin,
+		Stdout: stdout,
+		Stderr: stderr,
+	}
+
+	log.Infof("Connecting to pod %s in namespace %s, use Ctrl+C to exit\n\n", targetPod, targetNamespace)
+
+	err = executor.StreamWithContext(ctx, streamOpts)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
