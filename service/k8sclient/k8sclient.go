@@ -51,6 +51,14 @@ func findKubeConfig() (string, error) {
 func NewRestclient(kubeConfigPath, kubeContext string) (*restclient.Config, error) {
 	var err error
 
+	// Discover the kubeconfig if an explicit path wasn't provided
+	if kubeConfigPath == "" {
+		kubeConfigPath, err = findKubeConfig()
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	// Set defaults for creating a new ClientConfig.
 	loadingRules := &clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeConfigPath}
 	configOverrides := &clientcmd.ConfigOverrides{}

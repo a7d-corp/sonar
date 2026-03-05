@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/manifoldco/promptui"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/yaml"
 
@@ -42,4 +43,20 @@ func PrintManifestYAML(obj runtime.Object) error {
 	fmt.Print(string(yamlBytes))
 
 	return nil
+}
+
+// DisplaySelectionPrompt lists items and prompts the user to select one
+func DisplaySelectionPrompt(itemList []string) (selection string, err error) {
+	prompt := promptui.Select{
+		Label: "Select an item",
+		Items: itemList,
+	}
+
+	_, selection, err = prompt.Run()
+	if err != nil {
+		fmt.Printf("Prompt failed %v\n", err)
+		return
+	}
+
+	return selection, nil
 }
