@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add `exec` command.
 - Add `ls` command.
+- Add GH action to update Arch Linux PKGBUILD on new releases.
 
 ### Changed
 
