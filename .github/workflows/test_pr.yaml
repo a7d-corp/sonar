@@ -13,15 +13,6 @@ jobs:
         uses: actions/setup-go@v6
       - name: 'build binary'
         run: go build -o sonar
-      - name: 'wait for approval'
-        uses: trstringer/manual-approval@v1
-        with:
-          secret: ${{ github.TOKEN }}
-          approvers: glitchcrab
-          minimum-approvals: 1
-          issue-title: "Approval required for testing in KinD"
-          issue-body: "Please approve or deny creation of a KinD cluster for testing"
-          exclude-workflow-initiator-as-approver: false
       - name: 'create kind cluster'
         uses: helm/kind-action@v1
         with:
