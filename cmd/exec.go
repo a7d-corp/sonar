@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/glitchcrab/sonar/internal/helpers"
+	sonartypes "github.com/glitchcrab/sonar/internal/types"
 	"github.com/glitchcrab/sonar/service/k8sclient"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -35,11 +36,6 @@ import (
 )
 
 var (
-	searchLabels    = []string{"owner=sonar"}
-	searchNamespace string
-	targetPod       string
-	targetNamespace string
-
 	execCmd = &cobra.Command{
 		Use:   "exec",
 		Short: "Execs into a Sonar debug container",
@@ -63,17 +59,16 @@ with the name 'test' in namespace 'kube-system'.`,
 	}
 )
 
-// DiscoveredPod represents a pod which is a candidate for execing into.
-type DiscoveredPod struct {
-	Name      string
-	Namespace string
-}
-
 func init() {
 	rootCmd.AddCommand(execCmd)
 }
 
 func execCommand(cmd *cobra.Command, args []string) {
+	var searchLabels = []string{"owner=sonar"}
+	var searchNamespace string
+	var targetPod string
+	var targetNamespace string
+
 	// Create a clientset to interact with the cluster (only if not in dry-run mode).
 	var k8sClientSet *kubernetes.Clientset
 	var err error
@@ -112,9 +107,9 @@ func execCommand(cmd *cobra.Command, args []string) {
 		log.Fatal("error listing pods: %v", err)
 	}
 
-	var discoveredPods []DiscoveredPod
+	var discoveredPods []sonartypes.DiscoveredPod
 	for _, pod := range pods.Items {
-		discoveredPods = append(discoveredPods, DiscoveredPod{
+		discoveredPods = append(discoveredPods, sonartypes.DiscoveredPod{
 			Name:      pod.Name,
 			Namespace: pod.Namespace,
 		})
