@@ -18,32 +18,27 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"io"
 	"os"
 	"strings"
 
-	"github.com/glitchcrab/sonar/internal/helpers"
 	sonartypes "github.com/glitchcrab/sonar/internal/types"
 	"github.com/glitchcrab/sonar/service/k8sclient"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/kubernetes/scheme"
-	restclient "k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/remotecommand"
 )
 
 var (
-	execCmd = &cobra.Command{
-		Use:   "exec",
-		Short: "Execs into a Sonar debug container",
-		Long: `Exec attempts to exec into a Sonar debug container using the current
-(or provided) kubectl context. It searches for pods with the label
-'owner=sonar' and prompts the user to select a pod to exec into. The
-user can further narrow the selection by providing a name via the
---name/-N flag and also the namespace via the --namespace/-n flag.
+	lsCmd = &cobra.Command{
+		Use:     "ls",
+		Aliases: []string{"list", "find", "search", "discover", "lookup"},
+		Short:   "Lists all Sonar debug containers",
+		Long: `ls attempts to discover all debug containers in the cluster
+which were created by Sonar. It searches for pods with the label
+'owner=sonar' and lists them for the user. The user can further
+narrow the selection by providing a name via the --name/-N flag
+and also the namespace via the --namespace/-n flag.
 
 All flags are optional.
 
@@ -51,23 +46,21 @@ Global flags:
 
 Run "sonar help" in order to see flags which apply to all subcommands.`,
 		Example: `
-"sonar exec" - finds all Sonar pods across all namespaces.
+"sonar ls" - finds all Sonar pods across all namespaces.
 
-"sonar exec --name test --namespace kube-system" - finds all Sonar pods
+"sonar ls --name test --namespace kube-system" - finds all Sonar pods
 with the name 'test' in namespace 'kube-system'.`,
-		Run: execCommand,
+		Run: lsCommand,
 	}
 )
 
 func init() {
-	rootCmd.AddCommand(execCmd)
+	rootCmd.AddCommand(lsCmd)
 }
 
-func execCommand(cmd *cobra.Command, args []string) {
+func lsCommand(cmd *cobra.Command, args []string) {
 	var searchLabels = []string{"owner=sonar"}
 	var searchNamespace string
-	var targetPod string
-	var targetNamespace string
 
 	// Create a clientset to interact with the cluster (only if not in dry-run mode).
 	var k8sClientSet *kubernetes.Clientset
@@ -125,72 +118,7 @@ func execCommand(cmd *cobra.Command, args []string) {
 		os.Exit(0)
 	}
 
-	var podList []string
 	for _, pod := range discoveredPods {
-		podList = append(podList, fmt.Sprintf("%s/%s", pod.Namespace, pod.Name))
+		log.Infof("found pod %s in namespace %s", pod.Name, pod.Namespace)
 	}
-
-	// Prompt the user to select which pod to exec into.
-	selectedPod, err := helpers.DisplaySelectionPrompt(podList)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Trim the namespace from the selected pod.
-	_, selectedPod, _ = strings.Cut(selectedPod, "/")
-
-	for _, pod := range discoveredPods {
-		if pod.Name == selectedPod {
-			targetPod = pod.Name
-			targetNamespace = pod.Namespace
-			//ExecIntoPod(targetPod.Namespace, targetPod.Name)
-		}
-	}
-
-	restClient, err := k8sclient.NewRestclient(kubeConfig, kubeContext)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = execIntoPod(ctx, k8sClientSet, restClient, targetPod, targetNamespace, os.Stdin, os.Stdout, os.Stderr)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-// execIntoPod execs into a pod and gets a shell
-func execIntoPod(ctx context.Context, k8sClientSet *kubernetes.Clientset, restClient *restclient.Config, targetPod, targetNamespace string, stdin io.Reader, stdout io.Writer, stderr io.Writer) error {
-	command := []string{"/bin/sh"}
-	request := k8sClientSet.CoreV1().RESTClient().Post().Resource("pods").Name(targetPod).Namespace(targetNamespace).SubResource("exec")
-	options := &corev1.PodExecOptions{
-		Command: command,
-		Stdin:   true,
-		Stdout:  true,
-		Stderr:  true,
-		TTY:     true,
-	}
-	request.VersionedParams(
-		options,
-		scheme.ParameterCodec,
-	)
-
-	executor, err := remotecommand.NewSPDYExecutor(restClient, "POST", request.URL())
-	if err != nil {
-		return err
-	}
-
-	streamOpts := remotecommand.StreamOptions{
-		Stdin:  stdin,
-		Stdout: stdout,
-		Stderr: stderr,
-	}
-
-	log.Infof("Connecting to pod %s in namespace %s, use Ctrl+C to exit\n\n", targetPod, targetNamespace)
-
-	err = executor.StreamWithContext(ctx, streamOpts)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
