@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improve error when namespace could not be discovered.
 - Refactor k8sclient creation to be more flexible.
 - Improve error logging when no pods can be found.
+- Remove hold step from CI workflow.
 
 ### Fixed
 
