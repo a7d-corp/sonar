@@ -1,0 +1,75 @@
+name: Update PKGBUILD
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  update-pkgbuild:
+    name: Update PKGBUILD
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Download linux-amd64 asset and compute checksum
+        id: asset
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          asset_name="sonar-${TAG}-linux-amd64.tar.gz"
+
+          for i in $(seq 1 20); do
+            echo "Attempt ${i}/20: downloading ${asset_name}..."
+            if gh release download "${TAG}" \
+                --repo "${{ github.repository }}" \
+                --pattern "${asset_name}" \
+                --dir /tmp \
+                2>/dev/null; then
+              echo "Downloaded successfully"
+              break
+            fi
+            if [ "${i}" -eq 20 ]; then
+              echo "::error::Timed out waiting for ${asset_name}"
+              exit 1
+            fi
+            echo "Asset not yet available, retrying in 30s..."
+            sleep 30
+          done
+
+          sha256=$(sha256sum "/tmp/${asset_name}" | awk '{print $1}')
+          echo "sha256=${sha256}" >> $GITHUB_OUTPUT
+
+      - name: Update PKGBUILD
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+          SHA256: ${{ steps.asset.outputs.sha256 }}
+        run: |
+          version="${TAG#v}"
+          pkgbuild="distribution/arch-linux/PKGBUILD"
+          sed -i "s/^pkgver=.*/pkgver=${version}/" "${pkgbuild}"
+          sed -i "s/^pkgrel=.*/pkgrel=1/" "${pkgbuild}"
+          sed -i "s/^sha256sums=.*/sha256sums=('${SHA256}')/" "${pkgbuild}"
+          echo "Updated PKGBUILD:"
+          cat "${pkgbuild}"
+
+      - name: Create pull request
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          REMOTE_REPO: "https://${{ github.actor }}:${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }}.git"
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          version="${TAG#v}"
+          branch="pkgbuild-${TAG}"
+          git config --local user.email "${{ secrets.GH_EMAIL }}"
+          git config --local user.name "${{ secrets.GH_USER }}"
+          git checkout -b "${branch}"
+          git add distribution/arch-linux/PKGBUILD
+          git commit -m "Update PKGBUILD for ${TAG}"
+          git push "${REMOTE_REPO}" HEAD:"${branch}"
+          gh pr create \
+            --title "Update PKGBUILD for ${TAG}" \
+            --body "Automated PKGBUILD update for release ${TAG}." \
+            --base main \
+            --head "${branch}"
