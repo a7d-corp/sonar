@@ -7,15 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Run PKGBUILD action on release creation
+
 ## [0.15.0] - 2026-03-06
+
+### Added
+
+- Add `ls` command.
+- Add GH action to update Arch Linux PKGBUILD on new releases.
+
+### Changed
+
+- Remove hold step from CI workflow.
+- Improve error logging when no pods can be found.
 
 ## [0.14.0] - 2026-03-05
 
 ### Added
 
 - Add `exec` command.
-- Add `ls` command.
-- Add GH action to update Arch Linux PKGBUILD on new releases.
 
 ### Changed
 
@@ -27,8 +39,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add deletion step to Github Action.
 - Improve error when namespace could not be discovered.
 - Refactor k8sclient creation to be more flexible.
-- Improve error logging when no pods can be found.
-- Remove hold step from CI workflow.
 - Refactor exec command for better flexiblity.
 
 ### Fixed

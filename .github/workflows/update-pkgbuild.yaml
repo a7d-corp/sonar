@@ -2,7 +2,7 @@ name: Update PKGBUILD
 
 on:
   release:
-    types: [published]
+    types: [created]
 
 jobs:
   update-pkgbuild:
