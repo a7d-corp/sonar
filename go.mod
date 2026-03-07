@@ -2,7 +2,7 @@ module github.com/glitchcrab/sonar
 
 go 1.24.0
 
-toolchain go1.25.3
+toolchain go1.26.1
 
 require (
 	github.com/manifoldco/promptui v0.9.0
