@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update giantswarm/install-binary-action action to v4.
 - Update module github.com/spf13/cobra to v1.10.2.
 - Update dependency go to v1.26.1.
+- Update module k8s.io/api tov0.35.2.
+- Update module k8s.io/apimachinery to v0.35.2.
+- Update module k8s.io/client-go to v0.35.2.
 
 ## [0.15.0] - 2026-03-06
 
