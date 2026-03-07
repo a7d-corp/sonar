@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Run PKGBUILD action on release creation.
 - Update actions/setup-go to v6.3.0.
 - Update module github.com/sirupsen/logrus to v1.9.4.
+- Update giantswarm/install-binary-action action to v4.
 
 ## [0.15.0] - 2026-03-06
 
