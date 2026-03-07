@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update module github.com/sirupsen/logrus to v1.9.4.
 - Update giantswarm/install-binary-action action to v4.
 - Update module github.com/spf13/cobra to v1.10.2.
+- Update dependency go to v1.26.1.
 
 ## [0.15.0] - 2026-03-06
 
