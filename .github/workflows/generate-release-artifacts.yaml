@@ -1,0 +1,77 @@
+name: Generate release artifacts
+on:
+  release:
+    types: [released]
+
+jobs:
+  debug_info:
+    name: Debug info
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Print github context JSON
+        run: |
+          cat <<EOF
+          ${{ toJson(github) }}
+          EOF
+
+  gather_facts:
+    name: Gather facts
+    runs-on: ubuntu-24.04
+    outputs:
+      ref_version: ${{ steps.ref_version.outputs.refversion }}
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - name: Get version
+        id: get_version
+        env:
+          TAG_NAME: ${{ github.event.release.tag_name }}
+        run: |
+          version="${TAG_NAME#v}" # Strip "v" prefix.
+          echo "version=${version}"
+          echo "version=${version}" >> $GITHUB_OUTPUT
+
+  create_and_upload_build_artifacts:
+    name: Create and upload build artifacts
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - darwin-amd64
+          - darwin-arm64
+          - linux-amd64
+          - linux-arm64
+    env:
+      GITHUB_TOKEN: "${{ secrets.GH_TOKEN }}"
+      GO_VERSION: 1.26.1
+      ARTIFACT_DIR: bin-dist
+      TAG: v${{ needs.gather_facts.outputs.version }}
+    needs:
+      - create_release
+      - gather_facts
+    steps:
+      - name: Set up Go ${{ env.GO_VERSION }}
+        uses: actions/setup-go@v6.3.0
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ env.TAG }}
+      - name: Build ${{ matrix.platform }} binary
+        run: |
+          platform="${{ matrix.platform }}"
+          os="${platform%-*}"
+          arch="${platform##*-}"
+          mkdir -p ${{ env.ARTIFACT_DIR }}
+          GOOS="$os" GOARCH="$arch" go build -o ${{ env.ARTIFACT_DIR }}/${{ github.event.repository.name }} .
+          tar -czf ${{ env.ARTIFACT_DIR }}/${{ github.event.repository.name }}-${{ env.TAG }}-${{ matrix.platform }}.tar.gz \
+            -C ${{ env.ARTIFACT_DIR }} ${{ github.event.repository.name }}
+          rm ${{ env.ARTIFACT_DIR }}/${{ github.event.repository.name }}
+      - name: Add ${{ matrix.platform }} package to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FILE_NAME="${{ github.event.repository.name }}-${{ env.TAG }}-${{ matrix.platform }}.tar.gz"
+          gh release upload ${{ env.TAG }} \
+            ${{ env.ARTIFACT_DIR }}/${FILE_NAME}#${FILE_NAME}
