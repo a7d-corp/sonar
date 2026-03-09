@@ -47,7 +47,6 @@ jobs:
       ARTIFACT_DIR: bin-dist
       TAG: v${{ needs.gather_facts.outputs.version }}
     needs:
-      - create_release
       - gather_facts
     steps:
       - name: Set up Go ${{ env.GO_VERSION }}
