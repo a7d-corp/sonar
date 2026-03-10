@@ -45,6 +45,12 @@ var (
 user can further narrow the selection by providing a name via the
 --name/-N flag and also the namespace via the --namespace/-n flag.
 
+By default, the exec command will run /bin/sh in the target pod, however
+any command can be provided after a '--' separator. For example:
+
+"sonar exec -- /bin/bash" - prompts the user to select a Sonar pod
+and then runs /bin/bash in the selected pod.
+
 All flags are optional.
 
 Global flags:
@@ -152,18 +158,24 @@ func execCommand(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
-	err = execIntoPod(ctx, k8sClientSet, restClient, targetPod, targetNamespace, os.Stdin, os.Stdout, os.Stderr)
+	var podCommand []string
+	if cmd.ArgsLenAtDash() >= 0 {
+		podCommand = args[cmd.ArgsLenAtDash():]
+	} else {
+		podCommand = []string{"/bin/sh"}
+	}
+
+	err = execIntoPod(ctx, k8sClientSet, restClient, targetPod, targetNamespace, podCommand, os.Stdin, os.Stdout, os.Stderr)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 // execIntoPod execs into a pod and gets a shell
-func execIntoPod(ctx context.Context, k8sClientSet *kubernetes.Clientset, restClient *restclient.Config, targetPod, targetNamespace string, stdin io.Reader, stdout io.Writer, stderr io.Writer) error {
-	command := []string{"/bin/sh"}
+func execIntoPod(ctx context.Context, k8sClientSet *kubernetes.Clientset, restClient *restclient.Config, targetPod, targetNamespace string, podCommand []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) error {
 	request := k8sClientSet.CoreV1().RESTClient().Post().Resource("pods").Name(targetPod).Namespace(targetNamespace).SubResource("exec")
 	options := &corev1.PodExecOptions{
-		Command: command,
+		Command: podCommand,
 		Stdin:   true,
 		Stdout:  true,
 		Stderr:  true,
