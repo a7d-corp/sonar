@@ -1,7 +1,9 @@
 package helpers
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/manifoldco/promptui"
@@ -59,4 +61,20 @@ func DisplaySelectionPrompt(itemList []string) (selection string, err error) {
 	}
 
 	return selection, nil
+}
+
+// PromptForInput prompts the user for input and returns the response
+func PromptForInput(promptText string) (string, error) {
+	var response string
+
+	fmt.Println(promptText)
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+	err := scanner.Err()
+	if err != nil {
+		log.Fatal(err)
+	}
+	response = scanner.Text()
+
+	return response, err
 }
