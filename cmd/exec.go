@@ -142,6 +142,29 @@ func execCommand(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
+	// Handle passing the exec command via different methods. If the user has provided a command via the prompt, use that. If not, check if they have provided a command via the '--' separator. If not, default to /bin/sh.
+	var podCommand []string
+
+	// If the user has not provided a command via the '--' separator, prompt them to enter a command.
+	if cmd.ArgsLenAtDash() < 0 {
+		dynamicCommand, err := helpers.PromptForInput("Enter the command to run in the pod (or leave it blank)")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// If the user provided a command then use it, otherwise default to /bin/sh.
+		if dynamicCommand == "" {
+			podCommand = []string{"/bin/sh"}
+		} else {
+			podCommand = strings.Split(dynamicCommand, " ")
+		}
+	} else {
+		// Use the command provided via the '--' separator.
+		podCommand = args[cmd.ArgsLenAtDash():]
+	}
+
+	log.Infof("Will run command: %s", strings.Join(podCommand, " "))
+
 	// Trim the namespace from the selected pod.
 	_, selectedPod, _ = strings.Cut(selectedPod, "/")
 
@@ -149,20 +172,12 @@ func execCommand(cmd *cobra.Command, args []string) {
 		if pod.Name == selectedPod {
 			targetPod = pod.Name
 			targetNamespace = pod.Namespace
-			//ExecIntoPod(targetPod.Namespace, targetPod.Name)
 		}
 	}
 
 	restClient, err := k8sclient.NewRestclient(kubeConfig, kubeContext)
 	if err != nil {
 		log.Fatal(err)
-	}
-
-	var podCommand []string
-	if cmd.ArgsLenAtDash() >= 0 {
-		podCommand = args[cmd.ArgsLenAtDash():]
-	} else {
-		podCommand = []string{"/bin/sh"}
 	}
 
 	err = execIntoPod(ctx, k8sClientSet, restClient, targetPod, targetNamespace, podCommand, os.Stdin, os.Stdout, os.Stderr)
