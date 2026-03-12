@@ -7,11 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
+## [1.1.0] - 2026-03-12
 
+- Improve exec subcommand command string handling @glitchcrab (#364)
+- Extend exec subcommand to accept a command string to be passed to the target pod @glitchcrab (#363)
+- CI: remove dependency from release artifacts workflow @glitchcrab (#362)
+- Update stefanzweifel/git-auto-commit-action action to v7 @renovate[bot] (#360)
+- Update actions/checkout action to v6 @renovate[bot] (#359)
+- CI: add release drafter workflow and config @glitchcrab (#361)
+- Update github actions @glitchcrab (#358)
 - Update PKGBUILD for v1.0.0.
-- Extend exec subcommand to accept a command string to be passed to the target pod.
-- Improve exec subcommand command string handling.
 
 ## [1.0.0] - 2026-03-08
 
