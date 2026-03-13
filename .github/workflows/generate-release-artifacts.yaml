@@ -63,7 +63,9 @@ jobs:
           os="${platform%-*}"
           arch="${platform##*-}"
           mkdir -p ${{ env.ARTIFACT_DIR }}
-          GOOS="$os" GOARCH="$arch" go build -o ${{ env.ARTIFACT_DIR }}/${{ github.event.repository.name }} .
+          GOOS="$os" GOARCH="$arch" go build \
+            -ldflags "-X github.com/glitchcrab/sonar/pkg/project.version=${{ needs.gather_facts.outputs.version }}" \
+            -o ${{ env.ARTIFACT_DIR }}/${{ github.event.repository.name }} .
           tar -czf ${{ env.ARTIFACT_DIR }}/${{ github.event.repository.name }}-${{ env.TAG }}-${{ matrix.platform }}.tar.gz \
             -C ${{ env.ARTIFACT_DIR }} ${{ github.event.repository.name }}
           rm ${{ env.ARTIFACT_DIR }}/${{ github.event.repository.name }}
