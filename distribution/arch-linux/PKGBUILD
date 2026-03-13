@@ -15,6 +15,6 @@ sha256sums=('6465ae1f06da092060b3f03cedfed6450bbab5d706c0d8449be2c493c451df60')
 package() {
     cd ${srcdir}
     tar -xzf ${_srcname}-v${pkgver}.tar.gz
-    install -Dm755 "${srcdir}/${_srcname}-v${pkgver}-linux-amd64/${_srcname}" "${pkgdir}/usr/bin/${_srcname}"
+    install -Dm755 "${srcdir}/${_srcname}" "${pkgdir}/usr/bin/${_srcname}"
 }
 
