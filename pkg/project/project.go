@@ -3,7 +3,7 @@ package project
 var (
 	description = "Sonar deploys a debugging container to a Kubernetes cluster."
 	name        = "sonar"
-	source      = "https://github.com/glitchcrab/sonar"
+	source      = "https://github.com/a7d-corp/sonar"
 	version     = "1.0.0"
 )
 
