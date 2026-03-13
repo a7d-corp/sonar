@@ -51,6 +51,10 @@ any command can be provided after a '--' separator. For example:
 "sonar exec -- /bin/bash" - prompts the user to select a Sonar pod
 and then runs /bin/bash in the selected pod.
 
+If the user does not provide a command via the '--' separator, they
+will be prompted to enter a command after selecting a pod. If they
+do not enter a command, it will default to /bin/sh.
+
 All flags are optional.
 
 Global flags:
