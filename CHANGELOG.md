@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [Unreleased](https://github.com/a7d-corp/sonar/compare/v1.2.0...HEAD)
 
 ## [1.1.0] - 2026-03-12
 
@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update github actions @glitchcrab (#358)
 - Update PKGBUILD for v1.0.0.
 
-## [1.0.0] - 2026-03-08
+## [1.0.0](https://github.com/a7d-corp/sonar/compare/v1.0.0...v1.1.0) - 2026-03-08
 
 ### Changed
 
@@ -32,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update module k8s.io/apimachinery to v0.35.2.
 - Update module k8s.io/client-go to v0.35.2.
 
-## [0.15.0] - 2026-03-06
+## [0.15.0](https://github.com/a7d-corp/sonar/compare/v0.14.0...v0.15.0) - 2026-03-06
 
 ### Added
 
@@ -44,7 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove hold step from CI workflow.
 - Improve error logging when no pods can be found.
 
-## [0.14.0] - 2026-03-05
+## [0.14.0](https://github.com/a7d-corp/sonar/compare/v0.13.1...v0.14.0) - 2026-03-05
 
 ### Added
 
@@ -66,32 +66,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix resource selection during deletion.
 
-## [0.13.1] - 2026-02-20
+## [0.13.1](https://github.com/a7d-corp/sonar/compare/v0.13.1...v0.13.1) - 2026-02-20
 
 ### Fixed
 
 - Ensure non-root flag makes it into the SonarConfig.
 
-## [0.13.0] - 2025-09-01
+## [0.13.0](https://github.com/a7d-corp/sonar/compare/v0.12.0...v0.13.0) - 2025-09-01
 
 ### Added
 
 - Add dry-run flag to output manifests without applying them.
 
-## [0.12.0] - 2025-07-22
+## [0.12.0](https://github.com/a7d-corp/sonar/compare/v0.11.0...v0.12.0) - 2025-07-22
 
 ### Changed
 
 - Update Arch PKGBUILD for 0.11.0.
 - Read shell KUBECONFIG env var if kubeconfig flag not provided.
 
-## [0.11.0] - 2024-08-07
+## [0.11.0](https://github.com/a7d-corp/sonar/compare/v0.10.0...v0.11.0) - 2024-08-07
 
 ### Changed
 
 - Added pod security context to ensure the pod runs as a non-root user.
 
-## [0.10.0] - 2024-03-21
+## [0.10.0](https://github.com/a7d-corp/sonar/compare/v0.9.0...v0.10.0) - 2024-03-21
 
 ### Removed
 
@@ -101,7 +101,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Update Arch PKGBUILD for 0.9.0.
 
-## [0.9.0] - 2024-02-15
+## [0.9.0](https://github.com/a7d-corp/sonar/compare/v0.8.1...v0.9.0) - 2024-02-15
 
 ### Added
 
@@ -111,32 +111,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Update release workflows.
 
-## [0.8.1] - 2023-05-05
+## [0.8.1](https://github.com/a7d-corp/sonar/compare/v0.8.0...v0.8.1) - 2023-05-05
 
 ### Changed
 
 - Update release workflows.
 
-## [0.8.0] - 2023-05-04
+## [0.8.0](https://github.com/a7d-corp/sonar/compare/v0.7.1...v0.8.0) - 2023-05-04
 
 ### Changed
 
 - Support all client-go auth plugins.
 
-## [0.7.1] - 2022-02-05
+## [0.7.1](https://github.com/glitchcrab/sonar/compare/v0.7.0...v0.7.1) - 2022-02-05
 
 ### Fixed
 
 - Fix client-go to work with OIDC enabled clusters.
 - Mount host filesystem into container when `--node-exec` flag is used.
 
-## [0.7.0] - 2021-08-29
+## [0.7.0](https://github.com/glitchcrab/sonar/compare/v0.6.0...v0.7.0) - 2021-08-29
 
 ### Added
 
 - Add --node-exec flag to grant access to a host's IPC/net/PID namespaces.
 
-## [0.6.0] - 2021-08-28
+## [0.6.0](https://github.com/glitchcrab/sonar/compare/v0.5.0...v0.6.0) - 2021-08-28
 
 ### Added
 
@@ -146,26 +146,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Align the kube config flag with kubectl.
 
-## [0.5.0] - 2021-08-15
+## [0.5.0](https://github.com/glitchcrab/sonar/compare/v0.4.0...v0.5.0) - 2021-08-15
 
 ### Added
 
 - Github workflow to build and test on PRs.
 - Flag to provide a nodename to schedule the pod on.
 
-## [0.4.0] - 2021-08-05
+## [0.4.0](https://github.com/glitchcrab/sonar/compare/v0.3.1...v0.4.0) - 2021-08-05
 
 ### Added
 
 - Documentation for all flags and provided usage examples.
 
-## [0.3.1] - 2021-08-05
+## [0.3.1](https://github.com/glitchcrab/sonar/compare/v0.3.0...v0.3.1) - 2021-08-05
 
 ### Removed
 
 - Remove print leftover from debugging.
 
-## [0.3.0] - 2021-08-05
+## [0.3.0](https://github.com/glitchcrab/sonar/compare/v0.2.2...v0.3.0) - 2021-08-05
 
 ### Added
 
@@ -173,19 +173,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Expose the ability to set the pod's command and args.
 - Added short versions of some flags.
 
-## [0.2.2] - 2021-08-05
+## [0.2.2](https://github.com/glitchcrab/sonar/compare/v0.2.1...v0.2.2) - 2021-08-05
 
 ### Added
 
 - Added PKGBUILD for Arch Linux.
 
-## [0.2.1] - 2021-08-05
+## [0.2.1](https://github.com/glitchcrab/sonar/compare/v0.2.0...v0.2.1) - 2021-08-05
 
 ### Added
 
 - Added Makefile.
 
-## [0.2.0] - 2021-08-04
+## [0.2.0](https://github.com/glitchcrab/sonar/compare/v0.1.0...v0.2.0) - 2021-08-04
 
 ### Added
 
@@ -195,35 +195,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Aligned logging style.
 
-## [0.1.0] - 2021-08-04
+## [0.1.0](https://github.com/glitchcrab/sonar/releases/tag/v0.1.0) - 2021-08-04
 
 ### Added
 
 - Initial release; rough around the edges but usable.
 
-[Unreleased]: https://github.com/a7d-corp/sonar/compare/v1.1.0...HEAD
-[1.0.0]: https://github.com/a7d-corp/sonar/compare/v1.0.0...v1.1.0
-[1.0.0]: https://github.com/a7d-corp/sonar/compare/v0.15.0...v1.0.0
-[0.15.0]: https://github.com/a7d-corp/sonar/compare/v0.14.0...v0.15.0
-[0.14.0]: https://github.com/a7d-corp/sonar/compare/v0.13.1...v0.14.0
-[0.13.1]: https://github.com/a7d-corp/sonar/compare/v0.13.1...v0.13.1
-[0.13.1]: https://github.com/a7d-corp/sonar/compare/v0.13.1...v0.13.1
-[0.13.1]: https://github.com/a7d-corp/sonar/compare/v0.13.0...v0.13.1
-[0.13.0]: https://github.com/a7d-corp/sonar/compare/v0.12.0...v0.13.0
-[0.12.0]: https://github.com/a7d-corp/sonar/compare/v0.11.0...v0.12.0
-[0.11.0]: https://github.com/a7d-corp/sonar/compare/v0.10.0...v0.11.0
-[0.10.0]: https://github.com/a7d-corp/sonar/compare/v0.9.0...v0.10.0
-[0.9.0]: https://github.com/a7d-corp/sonar/compare/v0.8.1...v0.9.0
-[0.8.1]: https://github.com/a7d-corp/sonar/compare/v0.8.0...v0.8.1
-[0.8.0]: https://github.com/a7d-corp/sonar/compare/v0.7.1...v0.8.0
-[0.7.1]: https://github.com/glitchcrab/sonar/compare/v0.7.0...v0.7.1
-[0.7.0]: https://github.com/glitchcrab/sonar/compare/v0.6.0...v0.7.0
-[0.6.0]: https://github.com/glitchcrab/sonar/compare/v0.5.0...v0.6.0
-[0.5.0]: https://github.com/glitchcrab/sonar/compare/v0.4.0...v0.5.0
-[0.4.0]: https://github.com/glitchcrab/sonar/compare/v0.3.1...v0.4.0
-[0.3.1]: https://github.com/glitchcrab/sonar/compare/v0.3.0...v0.3.1
-[0.3.0]: https://github.com/glitchcrab/sonar/compare/v0.2.2...v0.3.0
-[0.2.2]: https://github.com/glitchcrab/sonar/compare/v0.2.1...v0.2.2
-[0.2.1]: https://github.com/glitchcrab/sonar/compare/v0.2.0...v0.2.1
-[0.2.0]: https://github.com/glitchcrab/sonar/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/glitchcrab/sonar/releases/tag/v0.1.0
+## [v1.2.0](https://github.com/a7d-corp/sonar/compare/v1.1.0...v1.2.0) - 2026-03-13
+
+### Changes
+
+- Update exec command help text @glitchcrab (#374)
+- Fix PKGBUILD install command @glitchcrab (#373)
+- Ensure the bot user is used to update changelog entries @glitchcrab (#372)
+- Update PKGBUILD for v1.1.2 @glitchcrab-bot (#371)
