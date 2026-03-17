@@ -25,6 +25,7 @@ import (
 	"github.com/glitchcrab/sonar/internal/helpers"
 	sonartypes "github.com/glitchcrab/sonar/internal/types"
 	"github.com/glitchcrab/sonar/service/k8sclient"
+	"github.com/moby/term"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
@@ -184,14 +185,15 @@ func execCommand(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
-	err = execIntoPod(ctx, k8sClientSet, restClient, targetPod, targetNamespace, podCommand, os.Stdin, os.Stdout, os.Stderr)
+	fd := os.Stdin.Fd()
+	err = execIntoPod(ctx, k8sClientSet, restClient, targetPod, targetNamespace, podCommand, fd, os.Stdin, os.Stdout, os.Stderr)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 // execIntoPod execs into a pod and gets a shell
-func execIntoPod(ctx context.Context, k8sClientSet *kubernetes.Clientset, restClient *restclient.Config, targetPod, targetNamespace string, podCommand []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) error {
+func execIntoPod(ctx context.Context, k8sClientSet *kubernetes.Clientset, restClient *restclient.Config, targetPod, targetNamespace string, podCommand []string, fd uintptr, stdin io.Reader, stdout io.Writer, stderr io.Writer) error {
 	request := k8sClientSet.CoreV1().RESTClient().Post().Resource("pods").Name(targetPod).Namespace(targetNamespace).SubResource("exec")
 	options := &corev1.PodExecOptions{
 		Command: podCommand,
@@ -216,7 +218,18 @@ func execIntoPod(ctx context.Context, k8sClientSet *kubernetes.Clientset, restCl
 		Stderr: stderr,
 	}
 
-	log.Infof("Connecting to pod %s in namespace %s, use Ctrl+C to exit\n\n", targetPod, targetNamespace)
+	log.Infof("Connecting to pod %s in namespace %s, use Ctrl+d to exit\n\n", targetPod, targetNamespace)
+
+	var previousState *term.State
+	previousState, err = term.SetRawTerminal(fd)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer term.RestoreTerminal(fd, previousState)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	err = executor.StreamWithContext(ctx, streamOpts)
 	if err != nil {
