@@ -16,4 +16,5 @@ type SonarConfig struct {
 	PodUser             int64
 	Privileged          bool
 	PrivilegeEscalation bool
+	UnprivilegedPing    bool
 }

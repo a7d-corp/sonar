@@ -47,6 +47,7 @@ var (
 	privileged          bool
 	privilegeEscalation bool
 	runAsNonRoot        bool
+	unprivilegedPing    bool
 
 	createCmd = &cobra.Command{
 		Use:     "create",
@@ -102,9 +103,16 @@ Apply a NetworkPolicy which allows all ingress and egress traffic.
 
 --node-name (default: none)
 
-Attempt to schedule the pod on the named node.i
+Attempt to schedule the pod on the named node.
 
 --node-exec (default: false)
+
+--unprivileged-ping (default: false)
+
+Sets the 'net.ipv4.ping_group_range' sysctl to allow ping to be used
+without root privileges.
+
+Examples:
 
 Create a privileged pod in the node's PID & network namespaces. A node
 name to schedule onto must also be provided. Note that the following
@@ -151,6 +159,7 @@ func init() {
 	createCmd.Flags().BoolVar(&privileged, "privileged", false, "run a privileged container (assumes userID of 0) (default \"false\")")
 	createCmd.Flags().BoolVar(&privilegeEscalation, "privilege-escalation", false, "allow privilege escalation (default \"false\")")
 	createCmd.Flags().BoolVar(&runAsNonRoot, "non-root", true, "run the container as non-root (assumes userID of 0) (default \"true\")")
+	createCmd.Flags().BoolVar(&unprivilegedPing, "unprivileged-ping", false, "allow a non-root user to use ping (default \"false\")")
 }
 
 func validateFlags() {
@@ -195,6 +204,7 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 		PodUser:             podUser,
 		Privileged:          privileged,
 		PrivilegeEscalation: privilegeEscalation,
+		UnprivilegedPing:    unprivilegedPing,
 	}
 
 	// Create a clientset to interact with the cluster (only if not in dry-run mode).

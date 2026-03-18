@@ -19,8 +19,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/glitchcrab/sonar/internal/helpers"
 	"github.com/glitchcrab/sonar/internal/clientconfigs"
+	"github.com/glitchcrab/sonar/internal/helpers"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -33,6 +33,7 @@ var (
 	hostNet        = false
 	hostPID        = false
 	replicas int32 = 1
+	sysctls        = []corev1.Sysctl{}
 )
 
 func NewDeployment(k8sClientSet *kubernetes.Clientset, ctx context.Context, sonarConfig clientconfigs.SonarConfig) (err error) {
@@ -57,6 +58,15 @@ func NewDeployment(k8sClientSet *kubernetes.Clientset, ctx context.Context, sona
 		},
 	}
 
+	// Add sysctl to allow unprivileged users to use ping.
+	if sonarConfig.UnprivilegedPing {
+		pingGroupRange := corev1.Sysctl{
+			Name:  "net.ipv4.ping_group_range",
+			Value: "0 2147483647",
+		}
+		sysctls = append(sysctls, pingGroupRange)
+	}
+
 	podSecurityContext := &corev1.PodSecurityContext{
 		RunAsUser:    &sonarConfig.PodUser,
 		RunAsGroup:   &sonarConfig.PodGroup,
@@ -64,6 +74,7 @@ func NewDeployment(k8sClientSet *kubernetes.Clientset, ctx context.Context, sona
 		SeccompProfile: &corev1.SeccompProfile{
 			Type: "RuntimeDefault",
 		},
+		Sysctls: sysctls,
 	}
 
 	// Define the Deployment
