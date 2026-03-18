@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/a7d-corp/sonar/compare/v1.2.0...HEAD)
+## [Unreleased](https://github.com/a7d-corp/sonar/compare/v1.3.0...HEAD)
 
 ## [1.1.0] - 2026-03-12
 
@@ -200,6 +200,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Initial release; rough around the edges but usable.
+
+## [v1.3.0](https://github.com/a7d-corp/sonar/compare/v1.2.0...v1.3.0) - 2026-03-18
+
+### Changes
+
+- Allow unprivileged users to use ping @glitchcrab (#379)
+- Add pod status to ls command output @glitchcrab (#378)
+- Update PKGBUILD for v1.2.0 @glitchcrab-bot (#375)
+- Use ctrl+d to exit exec session @glitchcrab (#377)
 
 ## [v1.2.0](https://github.com/a7d-corp/sonar/compare/v1.1.0...v1.2.0) - 2026-03-13
 
