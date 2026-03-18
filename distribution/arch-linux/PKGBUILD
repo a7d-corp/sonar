@@ -16,5 +16,9 @@ package() {
     cd ${srcdir}
     tar -xzf ${_srcname}-v${pkgver}.tar.gz
     install -Dm755 "${srcdir}/${_srcname}" "${pkgdir}/usr/bin/${_srcname}"
+
+    "$pkgdir/usr/bin/${_srcname}" completion bash | install -Dm644 /dev/stdin "$pkgdir/usr/share/bash-completion/completions/${_srcname}"
+    "$pkgdir/usr/bin/${_srcname}" completion zsh | install -Dm644 /dev/stdin "$pkgdir/usr/share/zsh/site-functions/_${_srcname}"
+    "$pkgdir/usr/bin/${_srcname}" completion fish | install -Dm644 /dev/stdin "$pkgdir/usr/share/fish/vendor_completions.d/${_srcname}.fish"
 }
 
