@@ -105,6 +105,7 @@ func lsCommand(cmd *cobra.Command, args []string) {
 		discoveredPods = append(discoveredPods, sonartypes.DiscoveredPod{
 			Name:      pod.Name,
 			Namespace: pod.Namespace,
+			Status:    pod.Status.Phase,
 		})
 	}
 
@@ -119,6 +120,6 @@ func lsCommand(cmd *cobra.Command, args []string) {
 	}
 
 	for _, pod := range discoveredPods {
-		log.Infof("found pod %s in namespace %s", pod.Name, pod.Namespace)
+		log.Infof("found %s in namespace %s (status: %s)", pod.Name, pod.Namespace, pod.Status)
 	}
 }
