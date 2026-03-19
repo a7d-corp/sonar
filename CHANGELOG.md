@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/a7d-corp/sonar/compare/v1.4.0...HEAD)
+## [Unreleased](https://github.com/a7d-corp/sonar/compare/v1.5.0...HEAD)
 
 ## [1.1.0] - 2026-03-12
 
@@ -200,6 +200,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Initial release; rough around the edges but usable.
+
+## [v1.5.0](https://github.com/a7d-corp/sonar/compare/v1.4.0...v1.5.0) - 2026-03-19
+
+### Changes
+
+- Update kubernetes monorepo to v0.35.3 @[renovate[bot]](https://github.com/apps/renovate) (#383)
+- Tidy makefiles @glitchcrab (#386)
+- Improve UX of exec command @glitchcrab (#384)
+- Add Makefile to clean up distribution dir of artifacts @glitchcrab (#385)
+- Update PKGBUILD for v1.4.0 @glitchcrab-bot (#382)
 
 ## [v1.4.0](https://github.com/a7d-corp/sonar/compare/v1.3.0...v1.4.0) - 2026-03-18
 
