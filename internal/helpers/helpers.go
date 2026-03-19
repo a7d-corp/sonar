@@ -48,10 +48,12 @@ func PrintManifestYAML(obj runtime.Object) error {
 }
 
 // DisplaySelectionPrompt lists items and prompts the user to select one
-func DisplaySelectionPrompt(itemList []string) (selection string, err error) {
+func DisplaySelectionPrompt(message string, itemList []string) (selection string, err error) {
 	prompt := promptui.Select{
-		Label: "Select an item",
-		Items: itemList,
+		HideHelp:     true,
+		HideSelected: true,
+		Label:        message,
+		Items:        itemList,
 	}
 
 	_, selection, err = prompt.Run()

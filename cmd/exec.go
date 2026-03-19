@@ -123,6 +123,7 @@ func execCommand(cmd *cobra.Command, args []string) {
 		discoveredPods = append(discoveredPods, sonartypes.DiscoveredPod{
 			Name:      pod.Name,
 			Namespace: pod.Namespace,
+			Status:    pod.Status.Phase,
 		})
 	}
 
@@ -138,21 +139,32 @@ func execCommand(cmd *cobra.Command, args []string) {
 
 	var podList []string
 	for _, pod := range discoveredPods {
-		podList = append(podList, fmt.Sprintf("%s/%s", pod.Namespace, pod.Name))
+		if pod.Status == corev1.PodRunning {
+			podList = append(podList, fmt.Sprintf("%s/%s", pod.Namespace, pod.Name))
+		}
+	}
+
+	if len(podList) == 0 {
+		log.Info("No pods found in Running state. Use the 'sonar ls' command to see all Sonar pods.")
+		os.Exit(0)
 	}
 
 	// Prompt the user to select which pod to exec into.
-	selectedPod, err := helpers.DisplaySelectionPrompt(podList)
+	prompt := "Select pod to exec into"
+	selectedPod, err := helpers.DisplaySelectionPrompt(prompt, podList)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// Inform the user of the selected pod
+	log.Infof("Selected pod: %s", selectedPod)
 
 	// Handle passing the exec command via different methods. If the user has provided a command via the prompt, use that. If not, check if they have provided a command via the '--' separator. If not, default to /bin/sh.
 	var podCommand []string
 
 	// If the user has not provided a command via the '--' separator, prompt them to enter a command.
 	if cmd.ArgsLenAtDash() < 0 {
-		dynamicCommand, err := helpers.PromptForInput("Enter the command to run in the pod (or leave it blank)")
+		dynamicCommand, err := helpers.PromptForInput("Enter the command to run in the pod (default: /bin/sh): ")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -220,12 +232,14 @@ func execIntoPod(ctx context.Context, k8sClientSet *kubernetes.Clientset, restCl
 
 	log.Infof("Connecting to pod %s in namespace %s, use Ctrl+d to exit\n\n", targetPod, targetNamespace)
 
+	// Set the terminal to raw mode
 	var previousState *term.State
 	previousState, err = term.SetRawTerminal(fd)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// Ensure the terminal is always restored
 	defer term.RestoreTerminal(fd, previousState)
 	if err != nil {
 		log.Fatal(err)
