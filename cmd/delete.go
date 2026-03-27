@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"github.com/glitchcrab/sonar/internal/clientconfigs"
+	"github.com/glitchcrab/sonar/internal/helpers"
 	"github.com/glitchcrab/sonar/service/k8sclient"
 	"github.com/glitchcrab/sonar/service/k8sresource"
 	log "github.com/sirupsen/logrus"
@@ -53,14 +54,16 @@ Flags:
 
 --force (default: false)
 
-Skips all interaction and deletes all resources created by Sonar.`,
+Skips conformation prompt and deletes all resources created by Sonar.`,
 		Example: `
-"sonar delete" - deletes all resources which match the defaults. This
-will result in deleting all resources in namespace 'default' which are
-named 'sonar-debug'.
+"sonar delete" - prompts the user to select a Sonar deployment from a
+list of all matching deployments in a cluster.
 
-"sonar delete --name test --namespace kube-system" - deletes all
-resources in namespace 'kube-system' named 'sonar-test'.`,
+"sonar delete --name test" - deletes all resources named 'test'.
+in namespace 'kube-system' named 'sonar-test'.
+
+NOTE: passing the --namespace flag will scope the search for deployments
+to a specific namespace.`,
 		Run: deleteSonarDeployment,
 	}
 )
@@ -72,12 +75,9 @@ func init() {
 }
 
 func deleteSonarDeployment(cmd *cobra.Command, args []string) {
-	// Create a SonarConfig and populate it with enough variables for deletion.
-	sonarConfig := clientconfigs.SonarConfig{
-		Labels:    labels,
-		Name:      fullName,
-		Namespace: namespace,
-	}
+	var searchLabels = []string{"owner=sonar"}
+	var searchNamespace string
+	var selectedDeploy string
 
 	// Create a clientset to interact with the cluster.
 	k8sClientSet, err := k8sclient.New(kubeContext, kubeConfig)
@@ -87,6 +87,64 @@ func deleteSonarDeployment(cmd *cobra.Command, args []string) {
 
 	// Create a context
 	ctx := context.TODO()
+
+	// Check if the user provided the --name flag, if so we skip the interactive lookup.
+	var skipInteractiveLookup bool
+	if rootCmd.PersistentFlags().Lookup("name").Changed {
+		skipInteractiveLookup = true
+		log.Info("name flag was set, skipping interactive selection")
+	}
+
+	/// Set whether we search all namespaces or scope to a specific namespace.
+	if rootCmd.PersistentFlags().Lookup("namespace").Changed {
+		// use the provided namespace
+		searchNamespace = namespace
+	} else {
+		// search all namespaces
+		searchNamespace = ""
+	}
+
+	discoveredDeployments, err := helpers.FindSonarDeployments(k8sClientSet, ctx, name, searchNamespace, searchLabels)
+
+	if !skipInteractiveLookup {
+		// Build a list of deployments to pass to the selection prompt.
+		var deployList []string
+		for _, deploy := range discoveredDeployments {
+			deployList = append(deployList, fmt.Sprintf("%s/%s", deploy.Namespace, deploy.Name))
+		}
+
+		// Prompt the user to select which deployment to delete.
+		prompt := "Select deployment to delete"
+		selectedDeploy, err = helpers.DisplaySelectionPrompt(prompt, deployList)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Trim the namespace from the selected deployment.
+		_, selectedDeploy, _ = strings.Cut(selectedDeploy, "/")
+	} else {
+		// If the user provided a name, we use that as the selected deployment.
+		selectedDeploy = fullName
+	}
+
+	// Inform the user of the selected pod
+	log.Infof("Deployment to be deleted: %s", selectedDeploy)
+
+	// Find the namespace of the victim deployment.
+	var selectedDeployNamespace string
+	for _, d := range discoveredDeployments {
+		if d.Name == selectedDeploy {
+			selectedDeployNamespace = d.Namespace
+			break
+		}
+	}
+
+	// Create a SonarConfig and populate it with enough variables for deletion.
+	sonarConfig := clientconfigs.SonarConfig{
+		Labels:    labels,
+		Name:      selectedDeploy,
+		Namespace: selectedDeployNamespace,
+	}
 
 	// Initialise an empty map to report deleted resources to user
 	// at the end.
