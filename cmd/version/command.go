@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,18 +21,19 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Prints the version of Sonar",
-	Run:   SonarVersion,
-}
+func NewCommand() *cobra.Command {
+	command := &cobra.Command{
+		Use:   "version",
+		Short: "Prints the version of Sonar",
+		Annotations: map[string]string{
+			"skip-init-config": "true",
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			version := project.Version()
+			log.Infof("version: %s\n", version)
+			return nil
+		},
+	}
 
-func init() {
-	rootCmd.AddCommand(versionCmd)
-}
-
-func SonarVersion(cmd *cobra.Command, args []string) {
-	version := project.Version()
-
-	log.Infof("version: %s\n", version)
+	return command
 }
