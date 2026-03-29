@@ -1,45 +1,24 @@
-/*
-Copyright © 2021 Simon Weald
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-	http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 package exec
 
 import (
 	"context"
 	"fmt"
-	"io"
 	"os"
 	"strings"
 
+	"github.com/glitchcrab/sonar/internal/app"
 	"github.com/glitchcrab/sonar/internal/helpers"
-	sonartypes "github.com/glitchcrab/sonar/internal/types"
+	"github.com/glitchcrab/sonar/internal/types"
 	"github.com/glitchcrab/sonar/service/k8sclient"
-	"github.com/moby/term"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/kubernetes/scheme"
-	restclient "k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/remotecommand"
 )
 
-var (
-	execCmd = &cobra.Command{
+func NewCommand() *cobra.Command {
+	command := &cobra.Command{
 		Use:   "exec",
-		Short: "Execs into a Sonar debug container",
+		Short: "Executes a command in a Sonar debug container",
 		Long: `Exec attempts to exec into a Sonar debug container using the current
 (or provided) kubectl context. It searches for pods with the label
 'owner=sonar' and prompts the user to select a pod to exec into. The
@@ -66,46 +45,35 @@ Run "sonar help" in order to see flags which apply to all subcommands.`,
 
 "sonar exec --name test --namespace kube-system" - finds all Sonar pods
 with the name 'test' in namespace 'kube-system'.`,
-		Run: execCommand,
+		RunE: runExecCommand,
 	}
-)
 
-func init() {
-	rootCmd.AddCommand(execCmd)
+	return command
 }
 
-func execCommand(cmd *cobra.Command, args []string) {
-	var searchLabels = []string{"owner=sonar"}
-	var searchNamespace string
-	var targetPod string
-	var targetNamespace string
-
-	// Create a clientset to interact with the cluster (only if not in dry-run mode).
-	var k8sClientSet *kubernetes.Clientset
-	var err error
-
-	k8sClientSet, err = k8sclient.New(kubeContext, kubeConfig)
+func runExecCommand(cmd *cobra.Command, args []string) error {
+	// Get the App instance from the command context
+	a, err := app.GetApp(cmd)
 	if err != nil {
-		log.Fatal(err) // TODO: better logging
+		return err
 	}
 
-	ctx := context.TODO()
+	// Create a Kubernetes clientset.
+	k8sClientSet, err := k8sclient.New(a.Globals.KubeContext, a.Globals.KubeConfig)
+	if err != nil {
+		return err
+	}
 
 	// Assemble lookup options
 
-	/// Set whether we search all namespaces or scope to a specific namespace.
-	if rootCmd.PersistentFlags().Lookup("namespace").Changed {
-		// use the provided namespace
-		searchNamespace = namespace
-	} else {
-		// search all namespaces
-		searchNamespace = ""
-	}
+	// Labels used to match Sonar containers.
+	searchLabels := []string{"owner=sonar"}
 
-	if rootCmd.PersistentFlags().Lookup("name").Changed {
+	// Add the provided name to the search labels if it is not empty.
+	if a.Globals.Name != "" {
 		// add the name to the search labels - we use the full name value as
 		// this is what the pod is actually labelled with.
-		searchLabels = append(searchLabels, fmt.Sprintf("name=%s", fullName))
+		searchLabels = append(searchLabels, fmt.Sprintf("name=%s", a.Globals.FullName))
 	}
 
 	// Create a label selector string from the search labels.
@@ -113,30 +81,24 @@ func execCommand(cmd *cobra.Command, args []string) {
 		LabelSelector: strings.Join(searchLabels, ","),
 	}
 
-	pods, err := k8sClientSet.CoreV1().Pods(searchNamespace).List(ctx, searchOpts)
+	// Get all pods in the cluster matching the search options.
+	ctx := context.TODO()
+	pods, err := k8sClientSet.CoreV1().Pods(a.Globals.Namespace).List(ctx, searchOpts)
 	if err != nil {
-		log.Fatal("error listing pods: %v", err)
+		return err
 	}
 
-	var discoveredPods []sonartypes.DiscoveredPod
+	// Add all discovered pods to the list of discovered pods.
+	var discoveredPods []types.DiscoveredPod
 	for _, pod := range pods.Items {
-		discoveredPods = append(discoveredPods, sonartypes.DiscoveredPod{
+		discoveredPods = append(discoveredPods, types.DiscoveredPod{
 			Name:      pod.Name,
 			Namespace: pod.Namespace,
 			Status:    pod.Status.Phase,
 		})
 	}
 
-	// Raise a clean exit if no pods found.
-	if len(discoveredPods) == 0 {
-		if searchNamespace == "" {
-			log.Infof("no pods found with labels %s across all namespaces", strings.Join(searchLabels, ","))
-		} else {
-			log.Infof("no pods found with labels %s in namespace %s", strings.Join(searchLabels, ","), searchNamespace)
-		}
-		os.Exit(0)
-	}
-
+	// Filter discovered pods to only include those in Running state, then create a list to pass to the selection prompt.
 	var podList []string
 	for _, pod := range discoveredPods {
 		if pod.Status == corev1.PodRunning {
@@ -144,16 +106,21 @@ func execCommand(cmd *cobra.Command, args []string) {
 		}
 	}
 
+	// Raise a clean exit if no pods found.
 	if len(podList) == 0 {
-		log.Info("No pods found in Running state. Use the 'sonar ls' command to see all Sonar pods.")
-		os.Exit(0)
+		if a.Globals.Namespace != "" {
+			log.Infof("no running pods found with labels %s in namespace %s", strings.Join(searchLabels, ","), a.Globals.Namespace)
+		} else {
+			log.Infof("no running pods found with labels %s across all namespaces", strings.Join(searchLabels, ","))
+		}
+		return nil
 	}
 
 	// Prompt the user to select which pod to exec into.
 	prompt := "Select pod to exec into"
 	selectedPod, err := helpers.DisplaySelectionPrompt(prompt, podList)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	// Inform the user of the selected pod
@@ -170,10 +137,10 @@ func execCommand(cmd *cobra.Command, args []string) {
 		}
 
 		// If the user provided a command then use it, otherwise default to /bin/sh.
-		if dynamicCommand == "" {
-			podCommand = []string{"/bin/sh"}
-		} else {
+		if dynamicCommand != "" {
 			podCommand = strings.Split(dynamicCommand, " ")
+		} else {
+			podCommand = []string{"/bin/sh"}
 		}
 	} else {
 		// Use the command provided via the '--' separator.
@@ -185,6 +152,9 @@ func execCommand(cmd *cobra.Command, args []string) {
 	// Trim the namespace from the selected pod.
 	_, selectedPod, _ = strings.Cut(selectedPod, "/")
 
+	// Find the target pod and namespace from the list of discovered pods based on the user-selected pod.
+	var targetPod string
+	var targetNamespace string
 	for _, pod := range discoveredPods {
 		if pod.Name == selectedPod {
 			targetPod = pod.Name
@@ -192,60 +162,17 @@ func execCommand(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	restClient, err := k8sclient.NewRestclient(kubeConfig, kubeContext)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fd := os.Stdin.Fd()
-	err = execIntoPod(ctx, k8sClientSet, restClient, targetPod, targetNamespace, podCommand, fd, os.Stdin, os.Stdout, os.Stderr)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-// execIntoPod execs into a pod and gets a shell
-func execIntoPod(ctx context.Context, k8sClientSet *kubernetes.Clientset, restClient *restclient.Config, targetPod, targetNamespace string, podCommand []string, fd uintptr, stdin io.Reader, stdout io.Writer, stderr io.Writer) error {
-	request := k8sClientSet.CoreV1().RESTClient().Post().Resource("pods").Name(targetPod).Namespace(targetNamespace).SubResource("exec")
-	options := &corev1.PodExecOptions{
-		Command: podCommand,
-		Stdin:   true,
-		Stdout:  true,
-		Stderr:  true,
-		TTY:     true,
-	}
-	request.VersionedParams(
-		options,
-		scheme.ParameterCodec,
-	)
-
-	executor, err := remotecommand.NewSPDYExecutor(restClient, "POST", request.URL())
+	// Create a Kubernetes REST client for executing into the pod.
+	restClient, err := k8sclient.NewRestclient(a.Globals.KubeConfig, a.Globals.KubeContext)
 	if err != nil {
 		return err
 	}
 
-	streamOpts := remotecommand.StreamOptions{
-		Stdin:  stdin,
-		Stdout: stdout,
-		Stderr: stderr,
-	}
+	// Get stdin's file descriptor.
+	fd := os.Stdin.Fd()
 
-	log.Infof("Connecting to pod %s in namespace %s, use Ctrl+d to exit\n\n", targetPod, targetNamespace)
-
-	// Set the terminal to raw mode
-	var previousState *term.State
-	previousState, err = term.SetRawTerminal(fd)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Ensure the terminal is always restored
-	defer term.RestoreTerminal(fd, previousState)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = executor.StreamWithContext(ctx, streamOpts)
+	// Exec into the pod.
+	err = exec(ctx, k8sClientSet, restClient, targetPod, targetNamespace, podCommand, fd, os.Stdin, os.Stdout, os.Stderr)
 	if err != nil {
 		return err
 	}
