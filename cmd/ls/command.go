@@ -18,21 +18,20 @@ package ls
 import (
 	"context"
 	"fmt"
-	"os"
 	"strings"
 
-	sonartypes "github.com/glitchcrab/sonar/internal/types"
+	"github.com/glitchcrab/sonar/internal/app"
+	"github.com/glitchcrab/sonar/internal/types"
 	"github.com/glitchcrab/sonar/service/k8sclient"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 )
 
-var (
-	lsCmd = &cobra.Command{
+func NewCommand() *cobra.Command {
+	command := &cobra.Command{
 		Use:     "ls",
-		Aliases: []string{"list", "find", "search", "discover", "lookup"},
+		Aliases: []string{"list", "discover", "lookup"},
 		Short:   "Lists all Sonar debug containers",
 		Long: `ls attempts to discover all debug containers in the cluster
 which were created by Sonar. It searches for pods with the label
@@ -50,44 +49,41 @@ Run "sonar help" in order to see flags which apply to all subcommands.`,
 
 "sonar ls --name test --namespace kube-system" - finds all Sonar pods
 with the name 'test' in namespace 'kube-system'.`,
-		Run: lsCommand,
+		RunE: runLsCommand,
 	}
-)
 
-func init() {
-	rootCmd.AddCommand(lsCmd)
+	return command
 }
 
-func lsCommand(cmd *cobra.Command, args []string) {
-	var searchLabels = []string{"owner=sonar"}
-	var searchNamespace string
-
-	// Create a clientset to interact with the cluster (only if not in dry-run mode).
-	var k8sClientSet *kubernetes.Clientset
-	var err error
-
-	k8sClientSet, err = k8sclient.New(kubeContext, kubeConfig)
+func runLsCommand(cmd *cobra.Command, args []string) error {
+	// Get the App instance from the command context
+	a, err := app.GetApp(cmd)
 	if err != nil {
-		log.Fatal(err) // TODO: better logging
+		return err
 	}
 
-	ctx := context.TODO()
+	// Create a Kubernetes clientset.
+	k8sClientSet, err := k8sclient.New(a.Globals.KubeContext, a.Globals.KubeConfig)
+	if err != nil {
+		return err
+	}
 
 	// Assemble lookup options
 
-	/// Set whether we search all namespaces or scope to a specific namespace.
-	if rootCmd.PersistentFlags().Lookup("namespace").Changed {
-		// use the provided namespace
-		searchNamespace = namespace
-	} else {
-		// search all namespaces
-		searchNamespace = ""
-	}
+	// Labels used to match Sonar containers.
+	searchLabels := []string{"owner=sonar"}
 
-	if rootCmd.PersistentFlags().Lookup("name").Changed {
+	// Add the provided name to the search labels if it is not empty.
+	if a.Globals.Name != "" {
 		// add the name to the search labels - we use the full name value as
 		// this is what the pod is actually labelled with.
-		searchLabels = append(searchLabels, fmt.Sprintf("name=%s", fullName))
+		searchLabels = append(searchLabels, fmt.Sprintf("name=%s", a.Globals.Name))
+	}
+
+	// Determine whether to scope the search to a specific namespace or across the whole cluster.
+	var searchNamespace string
+	if a.Globals.Namespace != "" {
+		searchNamespace = a.Globals.Namespace
 	}
 
 	// Create a label selector string from the search labels.
@@ -95,14 +91,17 @@ func lsCommand(cmd *cobra.Command, args []string) {
 		LabelSelector: strings.Join(searchLabels, ","),
 	}
 
+	// Get all pods in the cluster matching the search options.
+	ctx := context.TODO()
 	pods, err := k8sClientSet.CoreV1().Pods(searchNamespace).List(ctx, searchOpts)
 	if err != nil {
-		log.Fatal("error listing pods: %v", err)
+		return err
 	}
 
-	var discoveredPods []sonartypes.DiscoveredPod
+	// Add all discovered pods to the list of discovered pods.
+	discoveredPods := []types.DiscoveredPod{}
 	for _, pod := range pods.Items {
-		discoveredPods = append(discoveredPods, sonartypes.DiscoveredPod{
+		discoveredPods = append(discoveredPods, types.DiscoveredPod{
 			Name:      pod.Name,
 			Namespace: pod.Namespace,
 			Status:    pod.Status.Phase,
@@ -111,15 +110,18 @@ func lsCommand(cmd *cobra.Command, args []string) {
 
 	// Raise a clean exit if no pods found.
 	if len(discoveredPods) == 0 {
-		if searchNamespace == "" {
-			log.Infof("no pods found with labels %s across all namespaces", strings.Join(searchLabels, ","))
+		if a.Globals.Namespace != "" {
+			log.Infof("no pods found with labels %s in namespace %s", strings.Join(searchLabels, ","), a.Globals.Namespace)
 		} else {
-			log.Infof("no pods found with labels %s in namespace %s", strings.Join(searchLabels, ","), searchNamespace)
+			log.Infof("no pods found with labels %s across all namespaces", strings.Join(searchLabels, ","))
 		}
-		os.Exit(0)
+		return nil
 	}
 
+	// Print all discovered pods.
 	for _, pod := range discoveredPods {
 		log.Infof("found %s in namespace %s (status: %s)", pod.Name, pod.Namespace, pod.Status)
 	}
+
+	return nil
 }
