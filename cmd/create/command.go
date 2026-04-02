@@ -17,21 +17,13 @@ package create
 
 import (
 	"context"
-	"fmt"
-	"regexp"
+	"errors"
 
-	"github.com/glitchcrab/sonar/internal/clientconfigs"
+	"github.com/glitchcrab/sonar/internal/app"
+	"github.com/glitchcrab/sonar/internal/config"
 	"github.com/glitchcrab/sonar/service/k8sclient"
-	"github.com/glitchcrab/sonar/service/k8sresource"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-)
-
-const (
-	imageRegex = "^[a-z0-9/.-]*[:][a-z0-9.-]*$"
 )
 
 var (
@@ -48,8 +40,10 @@ var (
 	privilegeEscalation bool
 	runAsNonRoot        bool
 	unprivilegedPing    bool
+)
 
-	createCmd = &cobra.Command{
+func NewCommand() *cobra.Command {
+	command := &cobra.Command{
 		Use:     "create",
 		Aliases: []string{"deploy"},
 		Short:   "Create applies a debug deployment to a Kubernetes cluster",
@@ -139,60 +133,48 @@ worker2.
 
 "sonar create --dry-run" - prints the generated Kubernetes manifests
 to stdout without applying them to the cluster.`,
-		Run: createSonarDeployment,
+		RunE: runCreateCommand,
 	}
-)
 
-func init() {
-	rootCmd.AddCommand(createCmd)
-	cobra.OnInitialize(validateFlags)
+	command.Flags().BoolVarP(&dryRun, "dry-run", "d", false, "print generated manifests to stdout only")
+	command.Flags().StringVarP(&image, "image", "i", "busybox:latest", "image name (e.g. glitchcrab/ubuntu-debug:latest)")
+	command.Flags().BoolVar(&networkPolicy, "networkpolicy", false, "create NetworkPolicy")
+	command.Flags().BoolVar(&nodeExec, "node-exec", false, "spawn a container with root access to the node")
+	command.Flags().StringVarP(&nodeName, "node-name", "", "", "node name to attempt to schedule the pod on")
+	command.Flags().StringVarP(&podArgs, "pod-args", "a", "24h", "args to pass to pod command")
+	command.Flags().StringVarP(&podCommand, "pod-command", "c", "sleep", "pod command (aka image entrypoint)")
+	command.Flags().Int64VarP(&podGroup, "pod-groupid", "g", 1000, "groupID to run the pod as")
+	command.Flags().Int64VarP(&podUser, "pod-userid", "u", 1000, "userID to run the pod as")
+	command.Flags().BoolVar(&privileged, "privileged", false, "run a privileged container (assumes userID of 0)")
+	command.Flags().BoolVar(&privilegeEscalation, "privilege-escalation", false, "allow privilege escalation")
+	command.Flags().BoolVar(&runAsNonRoot, "non-root", true, "run the container as non-root (assumes userID of 0)")
+	command.Flags().BoolVar(&unprivilegedPing, "unprivileged-ping", false, "allow a non-root user to use ping")
 
-	createCmd.Flags().BoolVarP(&dryRun, "dry-run", "d", false, "print generated manifests to stdout only(default \"false\")")
-	createCmd.Flags().StringVarP(&image, "image", "i", "busybox:latest", "image name (e.g. glitchcrab/ubuntu-debug:latest)")
-	createCmd.Flags().BoolVar(&networkPolicy, "networkpolicy", false, "create NetworkPolicy (default \"false\")")
-	createCmd.Flags().BoolVar(&nodeExec, "node-exec", false, "spawn a container with root access to the node (default \"false\")")
-	createCmd.Flags().StringVarP(&nodeName, "node-name", "", "", "node name to attempt to schedule the pod on")
-	createCmd.Flags().StringVarP(&podArgs, "pod-args", "a", "24h", "args to pass to pod command")
-	createCmd.Flags().StringVarP(&podCommand, "pod-command", "c", "sleep", "pod command (aka image entrypoint)")
-	createCmd.Flags().Int64VarP(&podGroup, "pod-groupid", "g", 1000, "groupID to run the pod as")
-	createCmd.Flags().Int64VarP(&podUser, "pod-userid", "u", 1000, "userID to run the pod as")
-	createCmd.Flags().BoolVar(&privileged, "privileged", false, "run a privileged container (assumes userID of 0) (default \"false\")")
-	createCmd.Flags().BoolVar(&privilegeEscalation, "privilege-escalation", false, "allow privilege escalation (default \"false\")")
-	createCmd.Flags().BoolVar(&runAsNonRoot, "non-root", true, "run the container as non-root (assumes userID of 0) (default \"true\")")
-	createCmd.Flags().BoolVar(&unprivilegedPing, "unprivileged-ping", false, "allow a non-root user to use ping (default \"false\")")
+	return command
 }
 
-func validateFlags() {
-	// If the user has provided an image name then validate that it looks sane.
-	if createCmd.Flags().Lookup("image").Changed {
-		// Validate image to see if a tag has been provided; if not then
-		// use :latest. Does not validate full image name, just whether a
-		// tag was provided.
-		ok, _ := regexp.MatchString(imageRegex, image)
-		if !ok {
-			image = fmt.Sprintf("%s:latest", image)
-		}
-	}
-}
-
-func createSonarDeployment(cmd *cobra.Command, args []string) {
-	// Set sane options if we're exec-ing into a node.
-	if nodeExec {
-		// Error out if node name was not provided.
-		if nodeName == "" {
-			log.Fatal("--node-exec also requires --node-name to be provided")
-		}
-
-		networkPolicy = false
-		privileged = true
+func runCreateCommand(command *cobra.Command, args []string) error {
+	// Get the App instance from the command context
+	a, err := app.GetApp(command)
+	if err != nil {
+		return err
 	}
 
-	// Create a SonarConfig
-	sonarConfig := clientconfigs.SonarConfig{
+	// Determine the namespace to deploy into. If the user provided one then we use
+	// that, otherwise we use the namespace from the kubeconfig context.
+	var namespace string
+	if a.Globals.Namespace == "" {
+		namespace = a.Globals.NamespaceFromKubeConfig
+	} else {
+		namespace = a.Globals.Namespace
+	}
+
+	opts := config.CreateConfig{
 		DryRun:              dryRun,
+		FullName:            a.Globals.FullName,
 		Image:               image,
-		Labels:              labels,
-		Name:                fullName,
+		Labels:              a.Globals.Labels,
+		Name:                a.Globals.Name,
 		Namespace:           namespace,
 		NetworkPolicy:       networkPolicy,
 		NodeExec:            nodeExec,
@@ -207,73 +189,47 @@ func createSonarDeployment(cmd *cobra.Command, args []string) {
 		UnprivilegedPing:    unprivilegedPing,
 	}
 
-	// Create a clientset to interact with the cluster (only if not in dry-run mode).
+	if err := validateCreateConfig(command, &opts); err != nil {
+		return err
+	}
+
+	// Create a Kubernetes clientset.
 	var k8sClientSet *kubernetes.Clientset
-	var err error
-	if !sonarConfig.DryRun {
-		k8sClientSet, err = k8sclient.New(kubeContext, kubeConfig)
+	if !opts.DryRun {
+		k8sClientSet, err = k8sclient.New(a.Globals.KubeContext, a.Globals.KubeConfig)
 		if err != nil {
-			log.Fatal(err) // TODO: better logging
+			return err
 		}
 	}
 
-	// Create a context
 	ctx := context.TODO()
 
-	{
-		// Create a ServiceAccount
-		err := k8sresource.NewServiceAccount(k8sClientSet, ctx, sonarConfig)
-		// Handle the response
-		if sonarConfig.DryRun {
-			if err != nil {
-				log.Warnf("serviceaccount \"%s/%s\" manifest generation failed: %v\n", sonarConfig.Namespace, sonarConfig.Name, err)
-			}
-		} else {
-			if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {
-				log.Warnf("serviceaccount \"%s/%s\" already exists\n", sonarConfig.Namespace, sonarConfig.Name)
-			} else if err != nil {
-				log.Warnf("serviceaccount \"%s/%s\" was not created: %w\n", sonarConfig.Namespace, sonarConfig.Name, err)
-			} else {
-				log.Infof("serviceaccount \"%s/%s\" created\n", sonarConfig.Namespace, sonarConfig.Name)
-			}
+	var errs []error
+
+	// Create the ServiceAccount
+	saErr := createServiceAccount(k8sClientSet, ctx, opts)
+	if saErr != nil {
+		errs = append(errs, saErr)
+	}
+
+	// If set, create a NetworkPolicy
+	if opts.NetworkPolicy {
+		npErr := createNetworkPolicy(k8sClientSet, ctx, opts)
+		if npErr != nil {
+			errs = append(errs, npErr)
 		}
 	}
 
-	if sonarConfig.NetworkPolicy {
-		// Create a NetworkPolicy
-		err := k8sresource.NewNetworkPolicy(k8sClientSet, ctx, sonarConfig)
-		// Handle the response
-		if sonarConfig.DryRun {
-			if err != nil {
-				log.Warnf("networkpolicy \"%s\" manifest generation failed: %v\n", sonarConfig.Name, err)
-			}
-		} else {
-			if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {
-				log.Warnf("networkpolicy \"%s\" already exists\n", sonarConfig.Name)
-			} else if err != nil {
-				log.Warnf("networkpolicy \"%s\" was not created: %w\n", sonarConfig.Name, err)
-			} else {
-				log.Infof("networkpolicy \"%s\" created\n", sonarConfig.Name)
-			}
-		}
+	// Create the Deployment
+	deployErr := createDeployment(k8sClientSet, ctx, opts)
+	if deployErr != nil {
+		errs = append(errs, deployErr)
 	}
 
-	{
-		// Create a Deployment
-		err := k8sresource.NewDeployment(k8sClientSet, ctx, sonarConfig)
-		// Handle the response
-		if sonarConfig.DryRun {
-			if err != nil {
-				log.Warnf("deployment \"%s/%s\" manifest generation failed: %v\n", sonarConfig.Namespace, sonarConfig.Name, err)
-			}
-		} else {
-			if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {
-				log.Warnf("deployment \"%s/%s\" already exists\n", sonarConfig.Namespace, sonarConfig.Name)
-			} else if err != nil {
-				log.Warnf("deployment \"%s/%s\" was not created: %w\n", sonarConfig.Namespace, sonarConfig.Name, err)
-			} else {
-				log.Infof("deployment \"%s/%s\" created\n", sonarConfig.Namespace, sonarConfig.Name)
-			}
-		}
+	// If there were any validation errors, return them as a single error.
+	if len(errs) > 0 {
+		return errors.Join(errs...)
 	}
+
+	return nil
 }
