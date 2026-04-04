@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package delete
+package destroy
 
 import (
 	"context"
@@ -27,16 +27,17 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func deleteNetworkPolicy(k8sClientSet *kubernetes.Clientset, ctx context.Context, o config.DeleteConfig, force bool) (string, error) {
+func deleteServiceAccount(k8sClientSet *kubernetes.Clientset, ctx context.Context, o config.DeleteConfig, force bool) (string, error) {
 	// Set foreground deletion so the client waits for confirmation before proceeding
 	deletePolicy := metav1.DeletePropagationForeground
 	deleteOptions := metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
 	}
 
-	resourceType := "networkpolicy"
-	name := fmt.Sprintf("%s/%s", sonarConfig.Namespace, sonarConfig.Name)
+	resourceType := "serviceaccount"
+	name := fmt.Sprintf("%s/%s", o.Namespace, o.Name)
 
+	var err error
 	var ok bool
 	if !force {
 		ok = helpers.ConfirmationPrompt(resourceType, name)
@@ -44,21 +45,21 @@ func deleteNetworkPolicy(k8sClientSet *kubernetes.Clientset, ctx context.Context
 		ok = true
 	}
 	if ok {
-		err = k8sClientSet.NetworkingV1().NetworkPolicies(o.Namespace).Delete(ctx, o.Name, deleteOptions)
+		err = k8sClientSet.CoreV1().ServiceAccounts(o.Namespace).Delete(ctx, o.Name, deleteOptions)
 	}
 
 	// Handle errors
 	if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonNotFound {
 		// Skip deletion of this resource
-		log.Info("no matching networkpolicy found; skipping deletion")
+		log.Info("no matching serviceaccount found; skipping deletion")
 		return "", nil
 	} else if err != nil {
 		// Only return an error if the resource was not deleted
-		return "", fmt.Errorf("networkpolicy \"%s\" failed deletion: %w", o.Name, err)
+		return "", fmt.Errorf("serviceaccount \"%s/%s\" failed deletion: %w", o.Namespace, o.Name, err)
 	} else {
 		// Inform the user that the resource was deleted
-		log.Infof("deleting networkpolicy")
+		log.Infof("deleting serviceaccount")
 	}
 
-	return resourceType, nil
+	return resourceType, err
 }

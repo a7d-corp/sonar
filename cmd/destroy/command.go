@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package delete
+package destroy
 
 import (
 	"context"
@@ -36,9 +36,9 @@ var (
 )
 
 func NewCommand() *cobra.Command {
-	commnad := &cobra.Command{
-		Use:     "delete",
-		Aliases: []string{"destroy"},
+	command := &cobra.Command{
+		Use:     "destroy",
+		Aliases: []string{"delete", "remove", "rm"},
 		Short:   "Delete destroys all Sonar resources",
 		Long: `Delete will attempt to remove all resources deployed to a cluster
 by Sonor in the provided kubectl context (or the current context if
@@ -71,7 +71,7 @@ to a specific namespace.`,
 
 	command.Flags().BoolVarP(&force, "force", "f", false, "skip all confirmation prompts when deleting")
 
-	return commnad
+	return command
 }
 
 func runDeleteCommand(cmd *cobra.Command, args []string) error {
@@ -84,7 +84,7 @@ func runDeleteCommand(cmd *cobra.Command, args []string) error {
 	// Create a Kubernetes clientset.
 	k8sClientSet, err := k8sclient.New(a.Globals.KubeContext, a.Globals.KubeConfig)
 	if err != nil {
-		return fmt.Errorf(err)
+		return err
 	}
 
 	// Check if the user provided the --name flag, if so we skip the interactive lookup.
@@ -95,30 +95,32 @@ func runDeleteCommand(cmd *cobra.Command, args []string) error {
 	}
 
 	/// Set whether we search all namespaces or scope to a specific namespace.
+	var searchNamespace string
 	if a.Globals.Namespace != "" {
 		// use the provided namespace
-		searchNamespace = namespace
+		searchNamespace = a.Globals.Namespace
 	} else {
 		// search all namespaces
 		searchNamespace = ""
 	}
 
 	// Labels used to match Sonar resources.
-	searchLabels = []string{"owner=sonar"}
+	searchLabels := []string{"owner=sonar"}
 
 	// Add the provided name to the search labels if it is not empty.
 	if a.Globals.Name != "" {
 		// add the name to the search labels - we use the full name value as
 		// this is what the pod is actually labelled with.
-		searchLabels = append(searchLabels, fmt.Sprintf("name=%s", a.Globals.FullName))
+		searchLabels = append(searchLabels, fmt.Sprintf("name=%s", a.Globals.Name))
 	}
 
 	// Create a context
 	ctx := context.TODO()
 
 	// Find all Sonar deployments.
-	discoveredDeployments, err := helpers.FindSonarDeployments(k8sClientSet, ctx, name, searchNamespace, searchLabels)
+	discoveredDeployments, err := helpers.FindSonarDeployments(k8sClientSet, ctx, a.Globals.Name, searchNamespace, searchLabels)
 
+	var selectedDeploy string
 	if !skipInteractiveLookup {
 		// Build a list of deployments to pass to the selection prompt.
 		var deployList []string
@@ -137,7 +139,7 @@ func runDeleteCommand(cmd *cobra.Command, args []string) error {
 		_, selectedDeploy, _ = strings.Cut(selectedDeploy, "/")
 	} else {
 		// If the user provided a name, we use that as the selected deployment.
-		selectedDeploy = fullName
+		selectedDeploy = a.Globals.FullName
 	}
 
 	// Inform the user of the selected pod
@@ -154,9 +156,9 @@ func runDeleteCommand(cmd *cobra.Command, args []string) error {
 
 	// Instantiate a DeleteConfig struct.
 	opts := config.DeleteConfig{
-		Labels:    searchLabels,
-		Name:      selectedDeploy,
-		Namespace: selectedDeployNamespace,
+		SearchLabels: searchLabels,
+		Name:         selectedDeploy,
+		Namespace:    selectedDeployNamespace,
 	}
 
 	if force {
@@ -171,14 +173,14 @@ func runDeleteCommand(cmd *cobra.Command, args []string) error {
 	deletedResources := []string{}
 
 	// Convert opts.Labels into a format suitable for use as a LabelSelector.
-	var labelSlice = []string{}
-	for k, v := range opts.Labels {
-		labelSlice = append(labelSlice, fmt.Sprintf("%s=%s", k, v))
-	}
+	//var labelSlice = []string{}
+	//for k, v := range opts.SearchLabels {
+	//	labelSlice = append(labelSlice, fmt.Sprintf("%s=%s", k, v))
+	//}
 
 	// Filter resources by Sonar labels.
 	listOpts := metav1.ListOptions{
-		LabelSelector: strings.Join(labelSlice, ","),
+		LabelSelector: strings.Join(opts.SearchLabels, ","),
 	}
 
 	// Delete the deployment
@@ -188,7 +190,7 @@ func runDeleteCommand(cmd *cobra.Command, args []string) error {
 	}
 	// If the deployment was deleted successfully, add it to the list of deleted resources.
 	if len(delDeploy) > 0 {
-		deletedResources = append(deletedResources, delDeploy...)
+		deletedResources = append(deletedResources, delDeploy)
 	}
 
 	// Get NetworkPolicies and see if a match is found
@@ -209,7 +211,7 @@ func runDeleteCommand(cmd *cobra.Command, args []string) error {
 			}
 			// If the NetworkPolicy was deleted successfully, add it to the list of deleted resources.
 			if len(delNP) > 0 {
-				deletedResources = append(deletedResources, delNP...)
+				deletedResources = append(deletedResources, delNP)
 			}
 		}
 	}
@@ -221,7 +223,7 @@ func runDeleteCommand(cmd *cobra.Command, args []string) error {
 	}
 	// If the ServiceAccount was deleted successfully, add it to the list of deleted resources.
 	if len(delSA) > 0 {
-		deletedResources = append(deletedResources, delSA...)
+		deletedResources = append(deletedResources, delSA)
 	}
 
 	// If there were any validation errors, return them as a single error.

@@ -19,6 +19,7 @@ import (
 	"context"
 
 	"github.com/glitchcrab/sonar/cmd/create"
+	"github.com/glitchcrab/sonar/cmd/destroy"
 	"github.com/glitchcrab/sonar/cmd/exec"
 	"github.com/glitchcrab/sonar/cmd/ls"
 	"github.com/glitchcrab/sonar/cmd/version"
@@ -90,9 +91,9 @@ Namespace to deploy resources to.`,
 	return root
 }
 
-func initRootConfig(cmd *cobra.Command, args []string) error {
+func initRootConfig(root *cobra.Command, args []string) error {
 	// Skip config initialisation for commands which do not need it.
-	if cmd.Annotations["skip-init-config"] == "true" {
+	if root.Annotations["skip-init-config"] == "true" {
 		return nil
 	}
 
@@ -100,12 +101,13 @@ func initRootConfig(cmd *cobra.Command, args []string) error {
 	globals := config.Globals{
 		KubeConfig:  kubeConfig,
 		KubeContext: kubeContext,
+		Labels:      make(map[string]string),
 		Name:        name,
 		Namespace:   namespace,
 	}
 
 	// Validate user-provided config values.
-	if err := config.ValidateGlobalConfig(globals); err != nil {
+	if err := config.ValidateGlobalConfig(&globals); err != nil {
 		return err
 	}
 

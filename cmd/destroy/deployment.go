@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package delete
+package destroy
 
 import (
 	"context"
@@ -37,6 +37,7 @@ func deleteDeployment(k8sClientSet *kubernetes.Clientset, ctx context.Context, o
 	resourceType := "deployment"
 	name := fmt.Sprintf("%s/%s", o.Namespace, o.Name)
 
+	var err error
 	var ok bool
 	if !force {
 		ok = helpers.ConfirmationPrompt(resourceType, name)
