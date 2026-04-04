@@ -17,24 +17,26 @@ package delete
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
-	"github.com/glitchcrab/sonar/internal/clientconfigs"
+	"github.com/glitchcrab/sonar/internal/app"
+	"github.com/glitchcrab/sonar/internal/config"
 	"github.com/glitchcrab/sonar/internal/helpers"
 	"github.com/glitchcrab/sonar/service/k8sclient"
-	"github.com/glitchcrab/sonar/service/k8sresource"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	networkingv1 "k8s.io/api/networking/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var (
 	force bool
+)
 
-	deleteCmd = &cobra.Command{
+func NewCommand() *cobra.Command {
+	commnad := &cobra.Command{
 		Use:     "delete",
 		Aliases: []string{"destroy"},
 		Short:   "Delete destroys all Sonar resources",
@@ -64,39 +66,36 @@ in namespace 'kube-system' named 'sonar-test'.
 
 NOTE: passing the --namespace flag will scope the search for deployments
 to a specific namespace.`,
-		Run: deleteSonarDeployment,
+		RunE: runDeleteCommand,
 	}
-)
 
-func init() {
-	rootCmd.AddCommand(deleteCmd)
+	command.Flags().BoolVarP(&force, "force", "f", false, "skip all confirmation prompts when deleting")
 
-	deleteCmd.Flags().BoolVarP(&force, "force", "f", false, "skip all confirmation prompts when deleting (default \"false\")")
+	return commnad
 }
 
-func deleteSonarDeployment(cmd *cobra.Command, args []string) {
-	var searchLabels = []string{"owner=sonar"}
-	var searchNamespace string
-	var selectedDeploy string
-
-	// Create a clientset to interact with the cluster.
-	k8sClientSet, err := k8sclient.New(kubeContext, kubeConfig)
+func runDeleteCommand(cmd *cobra.Command, args []string) error {
+	// Get the App instance from the command context
+	a, err := app.GetApp(cmd)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	// Create a context
-	ctx := context.TODO()
+	// Create a Kubernetes clientset.
+	k8sClientSet, err := k8sclient.New(a.Globals.KubeContext, a.Globals.KubeConfig)
+	if err != nil {
+		return fmt.Errorf(err)
+	}
 
 	// Check if the user provided the --name flag, if so we skip the interactive lookup.
 	var skipInteractiveLookup bool
-	if rootCmd.PersistentFlags().Lookup("name").Changed {
+	if a.Globals.Name != "" {
 		skipInteractiveLookup = true
 		log.Info("name flag was set, skipping interactive selection")
 	}
 
 	/// Set whether we search all namespaces or scope to a specific namespace.
-	if rootCmd.PersistentFlags().Lookup("namespace").Changed {
+	if a.Globals.Namespace != "" {
 		// use the provided namespace
 		searchNamespace = namespace
 	} else {
@@ -104,6 +103,20 @@ func deleteSonarDeployment(cmd *cobra.Command, args []string) {
 		searchNamespace = ""
 	}
 
+	// Labels used to match Sonar resources.
+	searchLabels = []string{"owner=sonar"}
+
+	// Add the provided name to the search labels if it is not empty.
+	if a.Globals.Name != "" {
+		// add the name to the search labels - we use the full name value as
+		// this is what the pod is actually labelled with.
+		searchLabels = append(searchLabels, fmt.Sprintf("name=%s", a.Globals.FullName))
+	}
+
+	// Create a context
+	ctx := context.TODO()
+
+	// Find all Sonar deployments.
 	discoveredDeployments, err := helpers.FindSonarDeployments(k8sClientSet, ctx, name, searchNamespace, searchLabels)
 
 	if !skipInteractiveLookup {
@@ -139,37 +152,27 @@ func deleteSonarDeployment(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	// Create a SonarConfig and populate it with enough variables for deletion.
-	sonarConfig := clientconfigs.SonarConfig{
-		Labels:    labels,
+	// Instantiate a DeleteConfig struct.
+	opts := config.DeleteConfig{
+		Labels:    searchLabels,
 		Name:      selectedDeploy,
 		Namespace: selectedDeployNamespace,
 	}
-
-	// Initialise an empty map to report deleted resources to user
-	// at the end.
-	deletedResources := []string{}
 
 	if force {
 		log.Info("force was set, not asking for confirmation before deleting resources")
 	}
 
-	{
-		// Delete the deployment
-		err := k8sresource.DeleteDeployment(k8sClientSet, ctx, sonarConfig, force)
-		if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonNotFound {
-			log.Info("no matching deployment found; skipping deletion")
-		} else if err != nil {
-			log.Warnf("deployment \"%s/%s\" failed deletion: %w", sonarConfig.Namespace, sonarConfig.Name, err)
-		} else {
-			log.Infof("deleting deployment")
-			deletedResources = append(deletedResources, "deployment")
-		}
-	}
+	// Collect any errors.
+	var errs []error
 
-	// Convert sonarConfig.Labels into a format suitable for use as a LabelSelector.
+	// Initialise an empty map to report deleted resources to user
+	// at the end.
+	deletedResources := []string{}
+
+	// Convert opts.Labels into a format suitable for use as a LabelSelector.
 	var labelSlice = []string{}
-	for k, v := range labels {
+	for k, v := range opts.Labels {
 		labelSlice = append(labelSlice, fmt.Sprintf("%s=%s", k, v))
 	}
 
@@ -178,43 +181,52 @@ func deleteSonarDeployment(cmd *cobra.Command, args []string) {
 		LabelSelector: strings.Join(labelSlice, ","),
 	}
 
-	{
-		// Get NetworkPolicies and see if a match is found
-		inClusterNps := []networkingv1.NetworkPolicy{}
-		nps, err := k8sClientSet.NetworkingV1().NetworkPolicies(sonarConfig.Namespace).List(ctx, listOpts)
-		if err != nil {
-			log.Warnf("%w", err) // TODO: improve error logging here
-		}
-		inClusterNps = append(inClusterNps, nps.Items...)
+	// Delete the deployment
+	delDeploy, deployErr := deleteDeployment(k8sClientSet, ctx, opts, force)
+	if deployErr != nil {
+		errs = append(errs, deployErr)
+	}
+	// If the deployment was deleted successfully, add it to the list of deleted resources.
+	if len(delDeploy) > 0 {
+		deletedResources = append(deletedResources, delDeploy...)
+	}
 
-		// Range over discovered NetworkPolicies and see if any match.
-		for _, np := range inClusterNps {
-			if strings.HasPrefix(np.Name, sonarConfig.Name) {
-				// Delete the NetworkPolicy
-				err := k8sresource.DeleteNetworkPolicy(k8sClientSet, ctx, sonarConfig, force)
-				if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonNotFound {
-					log.Info("no matching podsecuritypolicy found; skipping deletion")
-				} else if err != nil {
-					log.Warnf("networkpolicy \"%s\" failed deletion: %w", sonarConfig.Name, err)
-				} else {
-					log.Infof("deleting networkpolicy")
-					deletedResources = append(deletedResources, "networkpolicy")
-				}
+	// Get NetworkPolicies and see if a match is found
+	inClusterNps := []networkingv1.NetworkPolicy{}
+	nps, err := k8sClientSet.NetworkingV1().NetworkPolicies(opts.Namespace).List(ctx, listOpts)
+	if err != nil {
+		log.Warnf("%w", err)
+	}
+	inClusterNps = append(inClusterNps, nps.Items...)
+
+	// Range over discovered NetworkPolicies and see if any match.
+	for _, np := range inClusterNps {
+		if strings.HasPrefix(np.Name, opts.Name) {
+			// Delete the NetworkPolicy
+			delNP, npErr := deleteNetworkPolicy(k8sClientSet, ctx, opts, force)
+			if npErr != nil {
+				errs = append(errs, npErr)
+			}
+			// If the NetworkPolicy was deleted successfully, add it to the list of deleted resources.
+			if len(delNP) > 0 {
+				deletedResources = append(deletedResources, delNP...)
 			}
 		}
 	}
 
-	{
-		// Delete the ServiceAccount
-		err := k8sresource.DeleteServiceAccount(k8sClientSet, ctx, sonarConfig, force)
-		if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonNotFound {
-			log.Info("no matching serviceaccount found; skipping deletion")
-		} else if err != nil {
-			log.Warnf("serviceaccount \"%s/%s\" failed deletion: %w", sonarConfig.Namespace, sonarConfig.Name, err)
-		} else {
-			log.Infof("deleting serviceaccount")
-			deletedResources = append(deletedResources, "serviceaccount")
-		}
+	// Delete the ServiceAccount
+	delSA, saErr := deleteServiceAccount(k8sClientSet, ctx, opts, force)
+	if saErr != nil {
+		errs = append(errs, saErr)
+	}
+	// If the ServiceAccount was deleted successfully, add it to the list of deleted resources.
+	if len(delSA) > 0 {
+		deletedResources = append(deletedResources, delSA...)
+	}
+
+	// If there were any validation errors, return them as a single error.
+	if len(errs) > 0 {
+		return errors.Join(errs...)
 	}
 
 	if len(deletedResources) > 0 {
@@ -222,4 +234,6 @@ func deleteSonarDeployment(cmd *cobra.Command, args []string) {
 	} else {
 		log.Info("no resources were deleted")
 	}
+
+	return nil
 }
