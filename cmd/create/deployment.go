@@ -21,7 +21,7 @@ import (
 	"strings"
 
 	"github.com/glitchcrab/sonar/internal/config"
-	"github.com/glitchcrab/sonar/internal/helpers"
+	"github.com/glitchcrab/sonar/internal/utils"
 	log "github.com/sirupsen/logrus"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -172,7 +172,7 @@ func createDeployment(k8sClientSet *kubernetes.Clientset, ctx context.Context, o
 	var err error
 
 	if o.DryRun {
-		err = helpers.PrintManifestYAML(deployment)
+		err = utils.PrintManifestYAML(deployment)
 		if err != nil {
 			return fmt.Errorf("deployment \"%s/%s\" manifest generation failed: %v\n", o.Namespace, o.Name, err)
 		}

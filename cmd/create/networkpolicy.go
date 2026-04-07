@@ -20,7 +20,7 @@ import (
 	"fmt"
 
 	"github.com/glitchcrab/sonar/internal/config"
-	"github.com/glitchcrab/sonar/internal/helpers"
+	"github.com/glitchcrab/sonar/internal/utils"
 	log "github.com/sirupsen/logrus"
 	networkingv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -60,7 +60,7 @@ func createNetworkPolicy(k8sClientSet *kubernetes.Clientset, ctx context.Context
 	var err error
 
 	if o.DryRun {
-		err = helpers.PrintManifestYAML(np)
+		err = utils.PrintManifestYAML(np)
 		if err != nil {
 			return fmt.Errorf("networkpolicy \"%s\" manifest generation failed: %v\n", o.Name, err)
 		}

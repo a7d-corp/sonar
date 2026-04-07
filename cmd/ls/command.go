@@ -21,8 +21,8 @@ import (
 	"strings"
 
 	"github.com/glitchcrab/sonar/internal/app"
+	"github.com/glitchcrab/sonar/internal/k8sclient"
 	"github.com/glitchcrab/sonar/internal/types"
-	"github.com/glitchcrab/sonar/service/k8sclient"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

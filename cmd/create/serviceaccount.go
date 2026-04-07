@@ -20,7 +20,7 @@ import (
 	"fmt"
 
 	"github.com/glitchcrab/sonar/internal/config"
-	"github.com/glitchcrab/sonar/internal/helpers"
+	"github.com/glitchcrab/sonar/internal/utils"
 	log "github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -46,7 +46,7 @@ func createServiceAccount(k8sClientSet *kubernetes.Clientset, ctx context.Contex
 
 	// If dry-run is enabled, print the manifest and return
 	if o.DryRun {
-		err = helpers.PrintManifestYAML(sa)
+		err = utils.PrintManifestYAML(sa)
 		if err != nil {
 			return fmt.Errorf("serviceaccount \"%s/%s\" manifest generation failed: %v\n", o.Namespace, o.Name, err)
 		}

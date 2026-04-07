@@ -23,8 +23,8 @@ import (
 
 	"github.com/glitchcrab/sonar/internal/app"
 	"github.com/glitchcrab/sonar/internal/config"
-	"github.com/glitchcrab/sonar/internal/helpers"
-	"github.com/glitchcrab/sonar/service/k8sclient"
+	"github.com/glitchcrab/sonar/internal/utils"
+	"github.com/glitchcrab/sonar/internal/k8sclient"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	networkingv1 "k8s.io/api/networking/v1"
@@ -118,7 +118,7 @@ func runDeleteCommand(cmd *cobra.Command, args []string) error {
 	ctx := context.TODO()
 
 	// Find all Sonar deployments.
-	discoveredDeployments, err := helpers.FindSonarDeployments(k8sClientSet, ctx, a.Globals.Name, searchNamespace, searchLabels)
+	discoveredDeployments, err := utils.FindSonarDeployments(k8sClientSet, ctx, a.Globals.Name, searchNamespace, searchLabels)
 
 	var selectedDeploy string
 	if !skipInteractiveLookup {
@@ -130,7 +130,7 @@ func runDeleteCommand(cmd *cobra.Command, args []string) error {
 
 		// Prompt the user to select which deployment to delete.
 		prompt := "Select deployment to delete"
-		selectedDeploy, err = helpers.DisplaySelectionPrompt(prompt, deployList)
+		selectedDeploy, err = utils.DisplaySelectionPrompt(prompt, deployList)
 		if err != nil {
 			log.Fatal(err)
 		}

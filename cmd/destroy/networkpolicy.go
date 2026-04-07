@@ -20,7 +20,7 @@ import (
 	"fmt"
 
 	"github.com/glitchcrab/sonar/internal/config"
-	"github.com/glitchcrab/sonar/internal/helpers"
+	"github.com/glitchcrab/sonar/internal/utils"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -40,7 +40,7 @@ func deleteNetworkPolicy(k8sClientSet *kubernetes.Clientset, ctx context.Context
 	var err error
 	var ok bool
 	if !force {
-		ok = helpers.ConfirmationPrompt(resourceType, name)
+		ok = utils.ConfirmationPrompt(resourceType, name)
 	} else {
 		ok = true
 	}
