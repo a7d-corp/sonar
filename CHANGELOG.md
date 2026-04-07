@@ -7,6 +7,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased](https://github.com/a7d-corp/sonar/compare/v1.6.0...HEAD)
 
+## [v1.6.0](https://github.com/a7d-corp/sonar/compare/v1.5.0...v1.6.0) - 2026-04-07
+
+### Changes
+
+- General housekeeping and tidying after flag refactoring @glitchcrab (#392)
+- Split subcommands into standalone packages @glitchcrab (#391)
+- Add interactive deletion @glitchcrab (#389)
+- Further Makefile improvements @glitchcrab (#388)
+- Update PKGBUILD for v1.5.0 @glitchcrab-bot (#387)
+
+## [v1.5.0](https://github.com/a7d-corp/sonar/compare/v1.4.0...v1.5.0) - 2026-03-19
+
+### Changes
+
+- Update kubernetes monorepo to v0.35.3 @[renovate[bot]](https://github.com/apps/renovate) (#383)
+- Tidy makefiles @glitchcrab (#386)
+- Improve UX of exec command @glitchcrab (#384)
+- Add Makefile to clean up distribution dir of artifacts @glitchcrab (#385)
+- Update PKGBUILD for v1.4.0 @glitchcrab-bot (#382)
+
+## [v1.4.0](https://github.com/a7d-corp/sonar/compare/v1.3.0...v1.4.0) - 2026-03-18
+
+### Changes
+
+- Arch: add autocompetion for bash, zsh and fish @glitchcrab (#381)
+- Update PKGBUILD for v1.3.0 @glitchcrab-bot (#380)
+
+## [v1.3.0](https://github.com/a7d-corp/sonar/compare/v1.2.0...v1.3.0) - 2026-03-18
+
+### Changes
+
+- Allow unprivileged users to use ping @glitchcrab (#379)
+- Add pod status to ls command output @glitchcrab (#378)
+- Update PKGBUILD for v1.2.0 @glitchcrab-bot (#375)
+- Use ctrl+d to exit exec session @glitchcrab (#377)
+
+## [v1.2.0](https://github.com/a7d-corp/sonar/compare/v1.1.0...v1.2.0) - 2026-03-13
+
+### Changes
+
+- Update exec command help text @glitchcrab (#374)
+- Fix PKGBUILD install command @glitchcrab (#373)
+- Ensure the bot user is used to update changelog entries @glitchcrab (#372)
+- Update PKGBUILD for v1.1.2 @glitchcrab-bot (#371)
+
 ## [1.1.0] - 2026-03-12
 
 - Improve exec subcommand command string handling @glitchcrab (#364)
@@ -200,48 +245,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Initial release; rough around the edges but usable.
-
-## [v1.6.0](https://github.com/a7d-corp/sonar/compare/v1.5.0...v1.6.0) - 2026-04-07
-
-### Changes
-
-- General housekeeping and tidying after flag refactoring @glitchcrab (#392)
-- Split subcommands into standalone packages @glitchcrab (#391)
-- Add interactive deletion @glitchcrab (#389)
-- Further Makefile improvements @glitchcrab (#388)
-- Update PKGBUILD for v1.5.0 @glitchcrab-bot (#387)
-
-## [v1.5.0](https://github.com/a7d-corp/sonar/compare/v1.4.0...v1.5.0) - 2026-03-19
-
-### Changes
-
-- Update kubernetes monorepo to v0.35.3 @[renovate[bot]](https://github.com/apps/renovate) (#383)
-- Tidy makefiles @glitchcrab (#386)
-- Improve UX of exec command @glitchcrab (#384)
-- Add Makefile to clean up distribution dir of artifacts @glitchcrab (#385)
-- Update PKGBUILD for v1.4.0 @glitchcrab-bot (#382)
-
-## [v1.4.0](https://github.com/a7d-corp/sonar/compare/v1.3.0...v1.4.0) - 2026-03-18
-
-### Changes
-
-- Arch: add autocompetion for bash, zsh and fish @glitchcrab (#381)
-- Update PKGBUILD for v1.3.0 @glitchcrab-bot (#380)
-
-## [v1.3.0](https://github.com/a7d-corp/sonar/compare/v1.2.0...v1.3.0) - 2026-03-18
-
-### Changes
-
-- Allow unprivileged users to use ping @glitchcrab (#379)
-- Add pod status to ls command output @glitchcrab (#378)
-- Update PKGBUILD for v1.2.0 @glitchcrab-bot (#375)
-- Use ctrl+d to exit exec session @glitchcrab (#377)
-
-## [v1.2.0](https://github.com/a7d-corp/sonar/compare/v1.1.0...v1.2.0) - 2026-03-13
-
-### Changes
-
-- Update exec command help text @glitchcrab (#374)
-- Fix PKGBUILD install command @glitchcrab (#373)
-- Ensure the bot user is used to update changelog entries @glitchcrab (#372)
-- Update PKGBUILD for v1.1.2 @glitchcrab-bot (#371)
