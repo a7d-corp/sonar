@@ -21,7 +21,7 @@ import (
 
 	"github.com/glitchcrab/sonar/internal/app"
 	"github.com/glitchcrab/sonar/internal/config"
-	"github.com/glitchcrab/sonar/service/k8sclient"
+	"github.com/glitchcrab/sonar/internal/k8sclient"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"
 )

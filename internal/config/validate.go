@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/glitchcrab/sonar/service/k8sclient"
+	"github.com/glitchcrab/sonar/internal/k8sclient"
 )
 
 const (

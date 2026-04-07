@@ -24,7 +24,7 @@ import (
 	"github.com/glitchcrab/sonar/internal/app"
 	"github.com/glitchcrab/sonar/internal/config"
 	"github.com/glitchcrab/sonar/internal/helpers"
-	"github.com/glitchcrab/sonar/service/k8sclient"
+	"github.com/glitchcrab/sonar/internal/k8sclient"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	networkingv1 "k8s.io/api/networking/v1"
