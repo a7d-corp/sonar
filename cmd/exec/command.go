@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/glitchcrab/sonar/internal/app"
-	"github.com/glitchcrab/sonar/internal/helpers"
+	"github.com/glitchcrab/sonar/internal/utils"
 	"github.com/glitchcrab/sonar/internal/k8sclient"
 	"github.com/glitchcrab/sonar/internal/types"
 	log "github.com/sirupsen/logrus"
@@ -119,7 +119,7 @@ func runExecCommand(cmd *cobra.Command, args []string) error {
 
 	// Prompt the user to select which pod to exec into.
 	prompt := "Select pod to exec into"
-	selectedPod, err := helpers.DisplaySelectionPrompt(prompt, podList)
+	selectedPod, err := utils.DisplaySelectionPrompt(prompt, podList)
 	if err != nil {
 		return err
 	}
@@ -132,7 +132,7 @@ func runExecCommand(cmd *cobra.Command, args []string) error {
 
 	// If the user has not provided a command via the '--' separator, prompt them to enter a command.
 	if cmd.ArgsLenAtDash() < 0 {
-		dynamicCommand, err := helpers.PromptForInput("Enter the command to run in the pod (default: /bin/sh): ")
+		dynamicCommand, err := utils.PromptForInput("Enter the command to run in the pod (default: /bin/sh): ")
 		if err != nil {
 			log.Fatal(err)
 		}
