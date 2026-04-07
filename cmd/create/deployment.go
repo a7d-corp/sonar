@@ -1,0 +1,195 @@
+/*
+Copyright © 2021 Simon Weald
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+package create
+
+import (
+	"context"
+	"fmt"
+	"strings"
+
+	"github.com/glitchcrab/sonar/internal/config"
+	"github.com/glitchcrab/sonar/internal/helpers"
+	log "github.com/sirupsen/logrus"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+)
+
+var (
+	hostIPC        = false
+	hostNet        = false
+	hostPID        = false
+	replicas int32 = 1
+	sysctls        = []corev1.Sysctl{}
+)
+
+func createDeployment(k8sClientSet *kubernetes.Clientset, ctx context.Context, o config.CreateConfig) error {
+	// Create container in the host namespaces if node-exec is set.
+	if o.NodeExec {
+		hostIPC = true
+		hostNet = true
+		hostPID = true
+	}
+
+	securityContext := &corev1.SecurityContext{
+		Capabilities: &corev1.Capabilities{
+			Drop: []corev1.Capability{"ALL"},
+		},
+		Privileged:               &o.Privileged,
+		RunAsUser:                &o.PodUser,
+		RunAsGroup:               &o.PodGroup,
+		RunAsNonRoot:             &o.NonRoot,
+		AllowPrivilegeEscalation: &o.PrivilegeEscalation,
+		SeccompProfile: &corev1.SeccompProfile{
+			Type: "RuntimeDefault",
+		},
+	}
+
+	// Add sysctl to allow unprivileged users to use ping.
+	if o.UnprivilegedPing {
+		pingGroupRange := corev1.Sysctl{
+			Name:  "net.ipv4.ping_group_range",
+			Value: "0 2147483647",
+		}
+		sysctls = append(sysctls, pingGroupRange)
+	}
+
+	podSecurityContext := &corev1.PodSecurityContext{
+		RunAsUser:    &o.PodUser,
+		RunAsGroup:   &o.PodGroup,
+		RunAsNonRoot: &o.NonRoot,
+		SeccompProfile: &corev1.SeccompProfile{
+			Type: "RuntimeDefault",
+		},
+		Sysctls: sysctls,
+	}
+
+	// Define the Deployment
+	deployment := &appsv1.Deployment{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "apps/v1",
+			Kind:       "Deployment",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Labels:    o.Labels,
+			Name:      o.FullName,
+			Namespace: o.Namespace,
+		},
+		Spec: appsv1.DeploymentSpec{
+			Replicas: &replicas,
+			Selector: &metav1.LabelSelector{
+				MatchLabels: o.Labels,
+			},
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: o.Labels,
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Image: o.Image,
+							Name:  "sonar",
+							Resources: corev1.ResourceRequirements{
+								Limits: corev1.ResourceList{
+									corev1.ResourceCPU:    resource.MustParse("2"),
+									corev1.ResourceMemory: resource.MustParse("250Mi"),
+								},
+								Requests: corev1.ResourceList{
+									corev1.ResourceCPU:    resource.MustParse("200m"),
+									corev1.ResourceMemory: resource.MustParse("50Mi"),
+								},
+							},
+							SecurityContext: securityContext,
+						},
+					},
+					HostIPC:            hostIPC,
+					HostNetwork:        hostNet,
+					HostPID:            hostPID,
+					RestartPolicy:      corev1.RestartPolicyAlways,
+					ServiceAccountName: o.FullName,
+					SecurityContext:    podSecurityContext,
+				},
+			},
+		},
+	}
+
+	// Update the deployment's command if one was provided.
+	if o.PodCommand != "" {
+		command := strings.Fields(o.PodCommand)
+		deployment.Spec.Template.Spec.Containers[0].Command = command
+	}
+
+	// Update the deployment's command if one was provided.
+	if o.PodArgs != "" {
+		cmdargs := strings.Fields(o.PodArgs)
+		deployment.Spec.Template.Spec.Containers[0].Args = cmdargs
+	}
+
+	// Add the NodeName if one was provided.
+	if o.NodeName != "" {
+		deployment.Spec.Template.Spec.NodeName = o.NodeName
+	}
+
+	// Mount the hosts's filesystem if exec-ing into a node.
+	if o.NodeExec {
+		// create the volume.
+		deployment.Spec.Template.Spec.Volumes = []corev1.Volume{
+			{
+				Name: "host-rootfs",
+				VolumeSource: corev1.VolumeSource{
+					HostPath: &corev1.HostPathVolumeSource{
+						Path: "/",
+					},
+				},
+			},
+		}
+
+		// attach it to the container
+		deployment.Spec.Template.Spec.Containers[0].VolumeMounts = []corev1.VolumeMount{
+			{
+				Name:      "host-rootfs",
+				MountPath: "/host",
+			},
+		}
+	}
+
+	var err error
+
+	if o.DryRun {
+		err = helpers.PrintManifestYAML(deployment)
+		if err != nil {
+			return fmt.Errorf("deployment \"%s/%s\" manifest generation failed: %v\n", o.Namespace, o.Name, err)
+		}
+	} else {
+		_, err = k8sClientSet.AppsV1().Deployments(o.Namespace).Create(ctx, deployment, metav1.CreateOptions{})
+	}
+
+	if err != nil {
+		if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {
+			return fmt.Errorf("deployment \"%s/%s\" already exists\n", o.Namespace, o.Name)
+		} else if err != nil {
+			return fmt.Errorf("deployment \"%s/%s\" was not created: %w\n", o.Namespace, o.Name, err)
+		}
+
+	} else {
+		log.Infof("deployment \"%s/%s\" created\n", o.Namespace, o.Name)
+	}
+
+	return nil
+}

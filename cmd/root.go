@@ -16,34 +16,27 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-	"regexp"
+	"context"
 
-	"github.com/glitchcrab/sonar/service/k8sclient"
-	log "github.com/sirupsen/logrus"
+	"github.com/glitchcrab/sonar/cmd/create"
+	"github.com/glitchcrab/sonar/cmd/destroy"
+	"github.com/glitchcrab/sonar/cmd/exec"
+	"github.com/glitchcrab/sonar/cmd/ls"
+	"github.com/glitchcrab/sonar/cmd/version"
+	"github.com/glitchcrab/sonar/internal/app"
+	"github.com/glitchcrab/sonar/internal/config"
 	"github.com/spf13/cobra"
 )
 
-const (
-	nameMaxLength  = 50
-	nameRegex      = "^[a-zA-Z0-9-.]*$"
-	nameStub       = "sonar"
-	namespaceRegex = "^[a-zA-Z0-9-]*$"
-)
-
 var (
-	fullName    string
 	kubeConfig  string
 	kubeContext string
-	labels      = map[string]string{
-		"created-by": "sonar",
-		"owner":      "sonar",
-	}
-	name      string
-	namespace string
+	name        string
+	namespace   string
+)
 
-	// rootCmd represents the base command when called without any subcommands
-	rootCmd = &cobra.Command{
+func NewRootCommand() *cobra.Command {
+	root := &cobra.Command{
 		Use:   "sonar",
 		Short: "Sonar deploys a debugging container to a Kubernetes cluster.",
 		Long: `Sonar is used to create a Kubernetes deployment with a debug container
@@ -75,65 +68,57 @@ provided then resource names will start with 'sonar-'.
 --namespace (default: 'default')
 
 Namespace to deploy resources to.`,
+		PersistentPreRunE: initRootConfig,
 	}
-)
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute() {
-	cobra.CheckErr(rootCmd.Execute())
+	// Add global flags
+	root.PersistentFlags().StringVar(&kubeConfig, "kubeconfig", "", "absolute path to kubeconfig file (default: '/home/$user/.kube/config')")
+	root.PersistentFlags().StringVar(&kubeContext, "context", "", "context to use")
+	root.PersistentFlags().StringVarP(&name, "name", "N", "", "resource name (max 50 characters) (automatically prepended with 'sonar-')")
+	root.PersistentFlags().StringVarP(&namespace, "namespace", "n", "", "namespace to operate in")
+
+	root.AddCommand(version.NewCommand())
+
+	// Add subcommands
+	root.AddCommand(
+		create.NewCommand(),
+		destroy.NewCommand(),
+		exec.NewCommand(),
+		ls.NewCommand(),
+		version.NewCommand(),
+	)
+
+	return root
 }
 
-func init() {
-	cobra.OnInitialize(initConfig)
-
-	rootCmd.PersistentFlags().StringVar(&kubeConfig, "kubeconfig", "", "absolute path to kubeconfig file (default: '/home/$user/.kube/config')")
-	rootCmd.PersistentFlags().StringVar(&kubeContext, "context", "", "context to use")
-	rootCmd.PersistentFlags().StringVarP(&name, "name", "N", "", "resource name (max 50 characters) (automatically prepended with 'sonar-')")
-	rootCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "", "namespace to operate in")
-}
-
-func initConfig() {
-	// If the user has provided a name then validate that it looks sane.
-	if rootCmd.PersistentFlags().Lookup("name").Changed {
-		// Restrict deployment name to 50 characters. 50 is a relatively
-		// arbitrary choice of length, but it should be sufficient.
-		if len(name) > nameMaxLength {
-			log.Fatal("deployment name must be 50 characters or less")
-		}
-
-		// Validate the provided name is suitable for a Kubernetes resource name.
-		ok, _ := regexp.MatchString(nameRegex, name)
-		if !ok {
-			log.Fatal("deployment name can only contain alphanumeric characters, hyphens and periods")
-		}
+func initRootConfig(root *cobra.Command, args []string) error {
+	// Skip config initialisation for commands which do not need it.
+	if root.Annotations["skip-init-config"] == "true" {
+		return nil
 	}
 
-	// Prepend provided name with 'sonar-' for ease of identifying Sonar deployments.
-	if name != "" {
-		fullName = fmt.Sprintf("%s-%s", nameStub, name)
-	} else {
-		fullName = nameStub
+	// Create config struct.
+	globals := config.Globals{
+		KubeConfig:  kubeConfig,
+		KubeContext: kubeContext,
+		Labels:      make(map[string]string),
+		Name:        name,
+		Namespace:   namespace,
 	}
 
-	// Add the provided name to the labels map for tagging generated resources
-	labels["name"] = fullName
-
-	// If the user has provided a namespace then validate that it looks sane.
-	if rootCmd.PersistentFlags().Lookup("namespace").Changed {
-		// Validate the provided namespace is suitable for a Kubernetes namespace.
-		ok, _ := regexp.MatchString(namespaceRegex, namespace)
-		if !ok {
-			log.Fatal("namespaces can only contain alphanumeric characters and hyphens")
-		}
+	// Validate user-provided config values.
+	if err := config.ValidateGlobalConfig(&globals); err != nil {
+		return err
 	}
 
-	// If the namespace was not provided, get the namespace from the context
-	var err error
-	if namespace == "" {
-		namespace, err = k8sclient.GetNamespace(kubeConfig, kubeContext)
-		if err != nil {
-			log.Fatal(err) // TODO: better logging
-		}
-	}
+	// Instantiate an App struct.
+	app := &app.App{Globals: globals}
+
+	appKey := app.RetrieveAppKey()
+
+	// Add the App struct to the command's context.
+	ctx := context.WithValue(root.Context(), appKey, app)
+	root.SetContext(ctx)
+
+	return nil
 }
