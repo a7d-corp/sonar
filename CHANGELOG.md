@@ -5,7 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/a7d-corp/sonar/compare/v1.6.0...HEAD)
+## [Unreleased](https://github.com/a7d-corp/sonar/compare/v1.6.1...HEAD)
+
+## [v1.6.1](https://github.com/a7d-corp/sonar/compare/v1.6.0...v1.6.1) - 2026-04-09
+
+### Changes
+
+- Default to websockets when exec-ing @glitchcrab (#394)
+- Update PKGBUILD for v1.6.0 @glitchcrab-bot (#393)
 
 ## [v1.6.0](https://github.com/a7d-corp/sonar/compare/v1.5.0...v1.6.0) - 2026-04-07
 
