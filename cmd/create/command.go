@@ -23,6 +23,7 @@ import (
 	"github.com/glitchcrab/sonar/internal/config"
 	"github.com/glitchcrab/sonar/internal/k8sclient"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -42,7 +43,7 @@ var (
 	unprivilegedPing    bool
 )
 
-func NewCommand() *cobra.Command {
+func NewCommand(v *viper.Viper) *cobra.Command {
 	command := &cobra.Command{
 		Use:     "create",
 		Aliases: []string{"deploy"},
@@ -133,7 +134,15 @@ worker2.
 
 "sonar create --dry-run" - prints the generated Kubernetes manifests
 to stdout without applying them to the cluster.`,
-		RunE: runCreateCommand,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var err error
+			err = runCreateCommand(cmd, args, v)
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		},
 	}
 
 	command.Flags().BoolVarP(&dryRun, "dry-run", "d", false, "print generated manifests to stdout only")
@@ -150,43 +159,37 @@ to stdout without applying them to the cluster.`,
 	command.Flags().BoolVar(&runAsNonRoot, "non-root", true, "run the container as non-root (assumes userID of 0)")
 	command.Flags().BoolVar(&unprivilegedPing, "unprivileged-ping", false, "allow a non-root user to use ping")
 
+	// Wire in Viper.
+	updateViperConfig(command, v)
+
 	return command
 }
 
-func runCreateCommand(command *cobra.Command, args []string) error {
+func runCreateCommand(command *cobra.Command, args []string, v *viper.Viper) error {
 	// Get the App instance from the command context
 	a, err := app.GetApp(command)
 	if err != nil {
 		return err
 	}
 
-	// Determine the namespace to deploy into. If the user provided one then we use
-	// that, otherwise we use the namespace from the kubeconfig context.
-	var namespace string
-	if a.Globals.Namespace == "" {
-		namespace = a.Globals.NamespaceFromKubeConfig
-	} else {
-		namespace = a.Globals.Namespace
-	}
-
 	opts := config.CreateConfig{
 		DryRun:              dryRun,
 		FullName:            a.Globals.FullName,
-		Image:               image,
+		Image:               v.GetString("image"),
 		Labels:              a.Globals.Labels,
 		Name:                a.Globals.Name,
-		Namespace:           namespace,
-		NetworkPolicy:       networkPolicy,
+		Namespace:           a.Globals.Namespace,
+		NetworkPolicy:       v.GetBool("networkpolicy"),
 		NodeExec:            nodeExec,
 		NodeName:            nodeName,
-		NonRoot:             runAsNonRoot,
-		PodArgs:             podArgs,
-		PodCommand:          podCommand,
-		PodGroup:            podGroup,
-		PodUser:             podUser,
-		Privileged:          privileged,
-		PrivilegeEscalation: privilegeEscalation,
-		UnprivilegedPing:    unprivilegedPing,
+		NonRoot:             v.GetBool("non-root"),
+		PodArgs:             v.GetString("pod-args"),
+		PodCommand:          v.GetString("pod-command"),
+		PodGroup:            v.GetInt64("pod-groupid"),
+		PodUser:             v.GetInt64("pod-userid"),
+		Privileged:          v.GetBool("privileged"),
+		PrivilegeEscalation: v.GetBool("privilege-escalation"),
+		UnprivilegedPing:    v.GetBool("unprivileged-ping"),
 	}
 
 	if err := validateCreateConfig(command, &opts); err != nil {
@@ -232,4 +235,28 @@ func runCreateCommand(command *cobra.Command, args []string) error {
 	}
 
 	return nil
+}
+
+// updateViperConfig updates a Viper instance with some create command flags.
+func updateViperConfig(command *cobra.Command, v *viper.Viper) {
+	// Bind some more flags to Viper.
+
+	flagsToBind := []string{
+		"image",
+		"networkpolicy",
+		"pod-args",
+		"pod-command",
+		"pod-groupid",
+		"pod-userid",
+		"privileged",
+		"privilege-escalation",
+		"non-root",
+		"unprivileged-ping",
+	}
+
+	for _, flag := range flagsToBind {
+		if err := v.BindPFlag(flag, command.Flags().Lookup(flag)); err != nil {
+			return
+		}
+	}
 }

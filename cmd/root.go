@@ -25,14 +25,19 @@ import (
 	"github.com/glitchcrab/sonar/cmd/version"
 	"github.com/glitchcrab/sonar/internal/app"
 	"github.com/glitchcrab/sonar/internal/config"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var (
-	kubeConfig  string
-	kubeContext string
-	name        string
-	namespace   string
+	defaultConfigFilename = "sonar"
+	configFile            string
+	kubeConfig            string
+	kubeContext           string
+	name                  string
+	namespace             string
+	v                     *viper.Viper
 )
 
 func NewRootCommand() *cobra.Command {
@@ -68,10 +73,20 @@ provided then resource names will start with 'sonar-'.
 --namespace (default: 'default')
 
 Namespace to deploy resources to.`,
-		PersistentPreRunE: initRootConfig,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			// Validate user-prvided config.
+			var err error
+			err = initRootConfig(cmd, args, v)
+			if err != nil {
+				return err
+			} else {
+				return nil
+			}
+		},
 	}
 
 	// Add global flags
+	root.PersistentFlags().StringVar(&configFile, "config", "", "path to Sonar config file")
 	root.PersistentFlags().StringVar(&kubeConfig, "kubeconfig", "", "absolute path to kubeconfig file (default: '/home/$user/.kube/config')")
 	root.PersistentFlags().StringVar(&kubeContext, "context", "", "context to use")
 	root.PersistentFlags().StringVarP(&name, "name", "N", "", "resource name (max 50 characters) (automatically prepended with 'sonar-')")
@@ -79,9 +94,12 @@ Namespace to deploy resources to.`,
 
 	root.AddCommand(version.NewCommand())
 
+	// Wire in Viper.
+	v, _ = initViperConfig(root)
+
 	// Add subcommands
 	root.AddCommand(
-		create.NewCommand(),
+		create.NewCommand(v),
 		destroy.NewCommand(),
 		exec.NewCommand(),
 		ls.NewCommand(),
@@ -91,7 +109,7 @@ Namespace to deploy resources to.`,
 	return root
 }
 
-func initRootConfig(root *cobra.Command, args []string) error {
+func initRootConfig(root *cobra.Command, args []string, v *viper.Viper) error {
 	// Skip config initialisation for commands which do not need it.
 	if root.Annotations["skip-init-config"] == "true" {
 		return nil
@@ -102,8 +120,8 @@ func initRootConfig(root *cobra.Command, args []string) error {
 		KubeConfig:  kubeConfig,
 		KubeContext: kubeContext,
 		Labels:      make(map[string]string),
-		Name:        name,
-		Namespace:   namespace,
+		Name:        v.GetString("name"),
+		Namespace:   v.GetString("namespace"),
 	}
 
 	// Validate user-provided config values.
@@ -121,4 +139,41 @@ func initRootConfig(root *cobra.Command, args []string) error {
 	root.SetContext(ctx)
 
 	return nil
+}
+
+// initViperConfig initialises a Viper instance and binds some Cobra flags.
+func initViperConfig(root *cobra.Command) (*viper.Viper, error) {
+	v := viper.New()
+
+	// Use the provided config file.
+	if configFile != "" {
+		// Set the user-provided config file.
+		v.SetConfigFile(configFile)
+	} else {
+		// Search for the config file in the user's home directory.
+		v.SetConfigName(defaultConfigFilename)
+		v.AddConfigPath("$HOME/.config")
+		v.AddConfigPath("$HOME/.config/sonar")
+	}
+
+	// Attempt to read a config file.
+	if err := v.ReadInConfig(); err != nil {
+		// Ignore file not found errors, but bail on any other error (such as parsing failures).
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			return nil, err
+		}
+		log.Info("no config file found")
+	} else {
+		log.Infof("using config file: %s", v.ConfigFileUsed())
+	}
+
+	// Bind some flags to Viper.
+	if err := v.BindPFlag("name", root.PersistentFlags().Lookup("name")); err != nil {
+		return nil, err
+	}
+	if err := v.BindPFlag("namespace", root.PersistentFlags().Lookup("namespace")); err != nil {
+		return nil, err
+	}
+
+	return v, nil
 }
