@@ -5,7 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/a7d-corp/sonar/compare/v1.6.1...HEAD)
+## [Unreleased](https://github.com/a7d-corp/sonar/compare/v1.7.0...HEAD)
+
+## [v1.7.0](https://github.com/a7d-corp/sonar/compare/v1.6.1...v1.7.0) - 2026-04-14
+
+### Changes
+
+- Add Viper for config file integration @glitchcrab (#396)
+- Update PKGBUILD for v1.6.1 @glitchcrab-bot (#395)
 
 ## [v1.6.1](https://github.com/a7d-corp/sonar/compare/v1.6.0...v1.6.1) - 2026-04-09
 
