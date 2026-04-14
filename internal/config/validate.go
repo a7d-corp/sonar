@@ -67,7 +67,7 @@ func ValidateGlobalConfig(g *Globals) error {
 	// If the namespace was not provided, get the namespace from the context
 	var err error
 	if g.Namespace == "" {
-		g.NamespaceFromKubeConfig, err = k8sclient.GetNamespace(g.KubeConfig, g.KubeContext)
+		g.Namespace, err = k8sclient.GetNamespace(g.KubeConfig, g.KubeContext)
 		if err != nil {
 			errs = append(errs, err)
 		}

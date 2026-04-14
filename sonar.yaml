@@ -1,0 +1,18 @@
+# This file contains all the configuration options which can be set
+# via the config file.
+#
+# The config file must exist at $HOME/.config/sonar/sonar.yaml or
+# $HOME/.config/sonar.yaml for autodiscovery to work.
+
+name: "sonar"
+namespace: "default"
+image: "glitchcrab/ubuntu-debug:latest"
+networkpolicy: false
+pod-args: "24h"
+pod-command: "sleep"
+pod-groupid: 1000
+pod-userid: 1000
+privileged: false
+privilege-escalation: false
+non-root: true
+unprivileged-ping: false
