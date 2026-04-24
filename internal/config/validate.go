@@ -40,11 +40,12 @@ func ValidateGlobalConfig(g *Globals) error {
 		}
 	}
 
-	// Prepend provided name with 'sonar-' for ease of identifying Sonar deployments.
+	// If a name was provided, prepend with 'sonar-' for ease of identifying Sonar deployments.
 	if g.Name != "" {
 		g.FullName = fmt.Sprintf("%s-%s", nameStub, g.Name)
 	} else {
 		g.FullName = nameStub
+		g.Name = nameStub
 	}
 
 	// Add the provided name to the labels map for tagging generated resources
