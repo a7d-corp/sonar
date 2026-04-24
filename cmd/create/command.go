@@ -18,6 +18,7 @@ package create
 import (
 	"context"
 	"errors"
+	"log"
 
 	"github.com/glitchcrab/sonar/internal/app"
 	"github.com/glitchcrab/sonar/internal/config"
@@ -43,7 +44,7 @@ var (
 	unprivilegedPing    bool
 )
 
-func NewCommand(v *viper.Viper) *cobra.Command {
+func NewCommand() *cobra.Command {
 	command := &cobra.Command{
 		Use:     "create",
 		Aliases: []string{"deploy"},
@@ -136,7 +137,8 @@ worker2.
 to stdout without applying them to the cluster.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
-			err = runCreateCommand(cmd, args, v)
+			//err = runCreateCommand(cmd, args, v)
+			err = runCreateCommand(cmd, args)
 			if err != nil {
 				return err
 			} else {
@@ -159,17 +161,25 @@ to stdout without applying them to the cluster.`,
 	command.Flags().BoolVar(&runAsNonRoot, "non-root", true, "run the container as non-root (assumes userID of 0)")
 	command.Flags().BoolVar(&unprivilegedPing, "unprivileged-ping", false, "allow a non-root user to use ping")
 
-	// Wire in Viper.
-	updateViperConfig(command, v)
-
 	return command
 }
 
-func runCreateCommand(command *cobra.Command, args []string, v *viper.Viper) error {
+func runCreateCommand(command *cobra.Command, args []string) error {
 	// Get the App instance from the command context
 	a, err := app.GetApp(command)
 	if err != nil {
 		return err
+	}
+
+	v, err := app.GetViper(command)
+	if err != nil {
+		return err
+	}
+
+	// Wire in Viper.
+	v, err = updateViperConfig(command, v)
+	if err != nil {
+		log.Fatalf("Error updating Viper config: %v", err)
 	}
 
 	opts := config.CreateConfig{
@@ -238,7 +248,7 @@ func runCreateCommand(command *cobra.Command, args []string, v *viper.Viper) err
 }
 
 // updateViperConfig updates a Viper instance with some create command flags.
-func updateViperConfig(command *cobra.Command, v *viper.Viper) {
+func updateViperConfig(command *cobra.Command, v *viper.Viper) (*viper.Viper, error) {
 	// Bind some more flags to Viper.
 
 	flagsToBind := []string{
@@ -254,9 +264,12 @@ func updateViperConfig(command *cobra.Command, v *viper.Viper) {
 		"unprivileged-ping",
 	}
 
+	var err error
 	for _, flag := range flagsToBind {
-		if err := v.BindPFlag(flag, command.Flags().Lookup(flag)); err != nil {
-			return
+		if err = v.BindPFlag(flag, command.Flags().Lookup(flag)); err != nil {
+			return nil, err
 		}
 	}
+
+	return v, nil
 }

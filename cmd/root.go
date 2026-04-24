@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/glitchcrab/sonar/cmd/create"
 	"github.com/glitchcrab/sonar/cmd/destroy"
@@ -76,7 +77,7 @@ Namespace to deploy resources to.`,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			// Validate user-prvided config.
 			var err error
-			err = initRootConfig(cmd, args, v)
+			err = initRootConfig(cmd, args)
 			if err != nil {
 				return err
 			} else {
@@ -92,14 +93,9 @@ Namespace to deploy resources to.`,
 	root.PersistentFlags().StringVarP(&name, "name", "N", "", "resource name (max 50 characters) (automatically prepended with 'sonar-')")
 	root.PersistentFlags().StringVarP(&namespace, "namespace", "n", "", "namespace to operate in")
 
-	root.AddCommand(version.NewCommand())
-
-	// Wire in Viper.
-	v, _ = initViperConfig(root)
-
 	// Add subcommands
 	root.AddCommand(
-		create.NewCommand(v),
+		create.NewCommand(),
 		destroy.NewCommand(),
 		exec.NewCommand(),
 		ls.NewCommand(),
@@ -109,10 +105,18 @@ Namespace to deploy resources to.`,
 	return root
 }
 
-func initRootConfig(root *cobra.Command, args []string, v *viper.Viper) error {
+func initRootConfig(root *cobra.Command, args []string) error {
 	// Skip config initialisation for commands which do not need it.
 	if root.Annotations["skip-init-config"] == "true" {
+		log.Info("skipping config initialisation")
 		return nil
+	}
+
+	// Initialise Viper config and bind flags.
+	var err error
+	v, err = initViperConfig(root)
+	if err != nil {
+		log.Fatalf("error initialising config: %v", err)
 	}
 
 	// Create config struct.
@@ -136,14 +140,18 @@ func initRootConfig(root *cobra.Command, args []string, v *viper.Viper) error {
 
 	// Add the App struct to the command's context.
 	ctx := context.WithValue(root.Context(), appKey, app)
+
+	// Add the Viper instance to the command's context.
+	ctx = context.WithValue(ctx, "viperKey", v)
+
 	root.SetContext(ctx)
 
 	return nil
 }
 
 // initViperConfig initialises a Viper instance and binds some Cobra flags.
-func initViperConfig(root *cobra.Command) (*viper.Viper, error) {
-	v := viper.New()
+func initViperConfig(cmd *cobra.Command) (*viper.Viper, error) {
+	v = viper.New()
 
 	// Use the provided config file.
 	if configFile != "" {
@@ -168,10 +176,12 @@ func initViperConfig(root *cobra.Command) (*viper.Viper, error) {
 	}
 
 	// Bind some flags to Viper.
-	if err := v.BindPFlag("name", root.PersistentFlags().Lookup("name")); err != nil {
+	if err := v.BindPFlag("name", cmd.Root().PersistentFlags().Lookup("name")); err != nil {
+		fmt.Println("error binding name flag to viper")
 		return nil, err
 	}
-	if err := v.BindPFlag("namespace", root.PersistentFlags().Lookup("namespace")); err != nil {
+	if err := v.BindPFlag("namespace", cmd.Root().PersistentFlags().Lookup("namespace")); err != nil {
+		fmt.Println("error binding namespace flag to viper")
 		return nil, err
 	}
 
