@@ -37,7 +37,7 @@ func createNetworkPolicy(k8sClientSet *kubernetes.Clientset, ctx context.Context
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Labels:    o.Labels,
-			Name:      o.Name,
+			Name:      o.FullName,
 			Namespace: o.Namespace,
 		},
 		Spec: networkingv1.NetworkPolicySpec{
@@ -75,7 +75,7 @@ func createNetworkPolicy(k8sClientSet *kubernetes.Clientset, ctx context.Context
 			return fmt.Errorf("networkpolicy \"%s\" was not created: %w\n", o.Name, err)
 		}
 	} else {
-		log.Infof("networkpolicy \"%s\" created\n", o.Name)
+		log.Infof("networkpolicy \"%s/%s\" created\n", o.Namespace, o.Name)
 	}
 
 	return nil
