@@ -17,7 +17,6 @@ package ls
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/glitchcrab/sonar/internal/app"
@@ -35,20 +34,13 @@ func NewCommand() *cobra.Command {
 		Short:   "Lists all Sonar debug containers",
 		Long: `ls attempts to discover all debug containers in the cluster
 which were created by Sonar. It searches for pods with the label
-'owner=sonar' and lists them for the user. The user can further
-narrow the selection by providing a name via the --name/-N flag
-and also the namespace via the --namespace/-n flag.
-
-All flags are optional.
+'owner=sonar' and lists them for the user.
 
 Global flags:
 
 Run "sonar help" in order to see flags which apply to all subcommands.`,
 		Example: `
-"sonar ls" - finds all Sonar pods across all namespaces.
-
-"sonar ls --name test --namespace kube-system" - finds all Sonar pods
-with the name 'test' in namespace 'kube-system'.`,
+"sonar ls" - finds all Sonar pods across all namespaces.`,
 		RunE: runLsCommand,
 	}
 
@@ -73,19 +65,6 @@ func runLsCommand(cmd *cobra.Command, args []string) error {
 	// Labels used to match Sonar containers.
 	searchLabels := []string{"owner=sonar"}
 
-	// Add the provided name to the search labels if it is not empty.
-	if a.Globals.Name != "" {
-		// add the name to the search labels - we use the full name value as
-		// this is what the pod is actually labelled with.
-		searchLabels = append(searchLabels, fmt.Sprintf("name=%s", a.Globals.Name))
-	}
-
-	// Determine whether to scope the search to a specific namespace or across the whole cluster.
-	var searchNamespace string
-	if a.Globals.Namespace != "" {
-		searchNamespace = a.Globals.Namespace
-	}
-
 	// Create a label selector string from the search labels.
 	searchOpts := metav1.ListOptions{
 		LabelSelector: strings.Join(searchLabels, ","),
@@ -93,7 +72,7 @@ func runLsCommand(cmd *cobra.Command, args []string) error {
 
 	// Get all pods in the cluster matching the search options.
 	ctx := context.TODO()
-	pods, err := k8sClientSet.CoreV1().Pods(searchNamespace).List(ctx, searchOpts)
+	pods, err := k8sClientSet.CoreV1().Pods("").List(ctx, searchOpts)
 	if err != nil {
 		return err
 	}
