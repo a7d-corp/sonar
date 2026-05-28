@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/glitchcrab/sonar/internal/app"
-	"github.com/glitchcrab/sonar/internal/utils"
 	"github.com/glitchcrab/sonar/internal/k8sclient"
 	"github.com/glitchcrab/sonar/internal/types"
+	"github.com/glitchcrab/sonar/internal/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
@@ -21,10 +21,10 @@ func NewCommand() *cobra.Command {
 		Use:   "exec",
 		Short: "Executes a command in a Sonar debug container",
 		Long: `Exec attempts to exec into a Sonar debug container using the current
-(or provided) kubectl context. It searches for pods with the label
-'owner=sonar' and prompts the user to select a pod to exec into. The
-user can further narrow the selection by providing a name via the
---name/-N flag and also the namespace via the --namespace/-n flag.
+(or provided) kubectl context. It searches for pods in the currently
+selected namespace with the label 'owner=sonar' and prompts the user
+to select a pod to exec into. The user can scope the selection by
+providing a namespace via the --namespace/-n flag.
 
 By default, the exec command will run /bin/sh in the target pod, however
 any command can be provided after a '--' separator. For example:
@@ -44,8 +44,8 @@ Run "sonar help" in order to see flags which apply to all subcommands.`,
 		Example: `
 "sonar exec" - finds all Sonar pods across all namespaces.
 
-"sonar exec --name test --namespace kube-system" - finds all Sonar pods
-with the name 'test' in namespace 'kube-system'.`,
+"sonar exec --namespace kube-system" - finds all Sonar pods in
+namespace 'kube-system'.`,
 		RunE: runExecCommand,
 	}
 
@@ -69,13 +69,6 @@ func runExecCommand(cmd *cobra.Command, args []string) error {
 
 	// Labels used to match Sonar containers.
 	searchLabels := []string{"owner=sonar"}
-
-	// Add the provided name to the search labels if it is not empty.
-	if a.Globals.Name != "" {
-		// add the name to the search labels - we use the full name value as
-		// this is what the pod is actually labelled with.
-		searchLabels = append(searchLabels, fmt.Sprintf("name=%s", a.Globals.FullName))
-	}
 
 	// Create a label selector string from the search labels.
 	searchOpts := metav1.ListOptions{
