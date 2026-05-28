@@ -89,11 +89,7 @@ func runLsCommand(cmd *cobra.Command, args []string) error {
 
 	// Raise a clean exit if no pods found.
 	if len(discoveredPods) == 0 {
-		if a.Globals.Namespace != "" {
-			log.Infof("no pods found with labels %s in namespace %s", strings.Join(searchLabels, ","), a.Globals.Namespace)
-		} else {
-			log.Infof("no pods found with labels %s across all namespaces", strings.Join(searchLabels, ","))
-		}
+		log.Infof("no pods found with labels %s across all namespaces", strings.Join(searchLabels, ","))
 		return nil
 	}
 
