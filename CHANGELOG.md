@@ -5,7 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/a7d-corp/sonar/compare/v1.7.0...HEAD)
+## [Unreleased](https://github.com/a7d-corp/sonar/compare/v1.8.0...HEAD)
+
+## [v1.8.0](https://github.com/a7d-corp/sonar/compare/v1.7.0...v1.8.0) - 2026-05-28
+
+### Changes
+
+- Remove scoping flags from ls subcommand @glitchcrab (#401)
+- bugfix: correct networkpolicy name @glitchcrab (#400)
+- Rework Viper integration for better flexibility @glitchcrab (#399)
+- Update PKGBUILD for v1.7.0 @glitchcrab-bot (#397)
 
 ## [v1.7.0](https://github.com/a7d-corp/sonar/compare/v1.6.1...v1.7.0) - 2026-04-14
 
