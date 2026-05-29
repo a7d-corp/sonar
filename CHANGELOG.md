@@ -5,7 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/a7d-corp/sonar/compare/v1.8.0...HEAD)
+## [Unreleased](https://github.com/a7d-corp/sonar/compare/v1.8.1...HEAD)
+
+## [v1.8.1](https://github.com/a7d-corp/sonar/compare/v1.8.0...v1.8.1) - 2026-05-29
+
+### Changes
+
+- Update kubernetes monorepo to v0.36.1 @[renovate[bot]](https://github.com/apps/renovate) (#398)
+- Don't use the name when finding pods to exec into @glitchcrab (#404)
+- Don't print namespace in log message when no pods are found @glitchcrab (#403)
+- Update PKGBUILD for v1.8.0 @glitchcrab-bot (#402)
 
 ## [v1.8.0](https://github.com/a7d-corp/sonar/compare/v1.7.0...v1.8.0) - 2026-05-28
 
