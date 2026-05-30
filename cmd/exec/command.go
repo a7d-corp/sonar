@@ -46,7 +46,8 @@ Run "sonar help" in order to see flags which apply to all subcommands.`,
 
 "sonar exec --namespace kube-system" - finds all Sonar pods in
 namespace 'kube-system'.`,
-		RunE: runExecCommand,
+		SilenceUsage: true,
+		RunE:         runExecCommand,
 	}
 
 	return command
