@@ -19,6 +19,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/glitchcrab/sonar/cmd/configfile"
 	"github.com/glitchcrab/sonar/cmd/create"
 	"github.com/glitchcrab/sonar/cmd/destroy"
 	"github.com/glitchcrab/sonar/cmd/exec"
@@ -32,13 +33,12 @@ import (
 )
 
 var (
-	defaultConfigFilename = "sonar"
-	configFile            string
-	kubeConfig            string
-	kubeContext           string
-	name                  string
-	namespace             string
-	v                     *viper.Viper
+	configFile  string
+	kubeConfig  string
+	kubeContext string
+	name        string
+	namespace   string
+	v           *viper.Viper
 )
 
 func NewRootCommand() *cobra.Command {
@@ -99,6 +99,7 @@ Namespace to deploy resources to.`,
 		destroy.NewCommand(),
 		exec.NewCommand(),
 		ls.NewCommand(),
+		configfile.NewCommand(),
 		version.NewCommand(),
 	)
 
@@ -151,28 +152,33 @@ func initRootConfig(root *cobra.Command, args []string) error {
 
 // initViperConfig initialises a Viper instance and binds some Cobra flags.
 func initViperConfig(cmd *cobra.Command) (*viper.Viper, error) {
-	v = viper.New()
+
+	var configFilePath string
+	var v = viper.New()
 
 	// Use the provided config file.
 	if configFile != "" {
-		// Set the user-provided config file.
-		v.SetConfigFile(configFile)
+		configFilePath = configFile
 	} else {
 		// Search for the config file in the user's home directory.
-		v.SetConfigName(defaultConfigFilename)
-		v.AddConfigPath("$HOME/.config")
-		v.AddConfigPath("$HOME/.config/sonar")
+		configFilePath, _ = config.FindConfigFile()
+		if configFilePath == "" {
+			log.Infof("config file not found")
+		}
 	}
 
-	// Attempt to read a config file.
-	if err := v.ReadInConfig(); err != nil {
-		// Ignore file not found errors, but bail on any other error (such as parsing failures).
-		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-			return nil, err
+	if configFilePath != "" {
+		v.SetConfigFile(configFilePath)
+
+		// Attempt to read the config file
+		if err := v.ReadInConfig(); err != nil {
+			// Ignore file not found errors, but bail on any other error (such as parsing failures).
+			if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+				return nil, err
+			}
+		} else {
+			log.Infof("using config file: %s", v.ConfigFileUsed())
 		}
-		log.Info("no config file found")
-	} else {
-		log.Infof("using config file: %s", v.ConfigFileUsed())
 	}
 
 	// Bind some flags to Viper.
