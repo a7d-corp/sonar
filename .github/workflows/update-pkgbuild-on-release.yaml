@@ -71,7 +71,7 @@ jobs:
           git commit -m "Update PKGBUILD for ${TAG}"
           git push "${REMOTE_REPO}" HEAD:"${branch}"
           gh pr create \
-            --title "Update PKGBUILD for ${TAG}" \
+            --title "chore: update PKGBUILD for ${TAG}" \
             --body "Automated PKGBUILD update for release ${TAG}." \
             --base main \
             --head "${branch}"
