@@ -11,6 +11,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
+        with:
+          ref: main
 
       - name: Download linux-amd64 asset and compute checksum
         id: asset
