@@ -26,7 +26,7 @@ func GetApp(cmd *cobra.Command) (*App, error) {
 func GetViper(cmd *cobra.Command) (*viper.Viper, error) {
 	val := cmd.Context().Value("viperKey")
 	if val == nil {
-		return nil, fmt.Errorf("Viper not initialised")
+		return nil, fmt.Errorf("viper not initialised")
 	}
 
 	v, ok := val.(*viper.Viper)
