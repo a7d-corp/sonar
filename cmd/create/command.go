@@ -136,9 +136,7 @@ worker2.
 "sonar create --dry-run" - prints the generated Kubernetes manifests
 to stdout without applying them to the cluster.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var err error
-			//err = runCreateCommand(cmd, args, v)
-			err = runCreateCommand(cmd, args)
+			err := runCreateCommand(cmd, args)
 			if err != nil {
 				return err
 			} else {
