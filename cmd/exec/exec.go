@@ -10,13 +10,12 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/rest"
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
 )
 
 // newExecutor returns an Executor. Websocket is preferred, with SPDY as a fallback.
-func newExecutor(config *rest.Config, method string, url *url.URL) (remotecommand.Executor, error) {
+func newExecutor(config *restclient.Config, method string, url *url.URL) (remotecommand.Executor, error) {
 	// Try WebSocket first
 	exec, err := remotecommand.NewWebSocketExecutor(config, method, url.String())
 	if err == nil {
