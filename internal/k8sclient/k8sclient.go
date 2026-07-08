@@ -128,7 +128,7 @@ func GetNamespace(kubeConfigPath, kubeContext string) (string, error) {
 
 	namespace := kubeConfig.Contexts[context].Namespace
 	if namespace == "" {
-		error := fmt.Errorf("No namespace set (context: %s, kubeconfig: %s)", context, kubeConfigPath)
+		error := fmt.Errorf("no namespace set (context: %s, kubeconfig: %s)", context, kubeConfigPath)
 		return "", error
 	}
 
