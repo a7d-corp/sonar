@@ -16,7 +16,6 @@ limitations under the License.
 package k8sclient
 
 import (
-	"errors"
 	"fmt"
 	"os"
 
@@ -129,7 +128,8 @@ func GetNamespace(kubeConfigPath, kubeContext string) (string, error) {
 
 	namespace := kubeConfig.Contexts[context].Namespace
 	if namespace == "" {
-		return "", errors.New(fmt.Sprintf("No namespace set (context: %s, kubeconfig: %s)", context, kubeConfigPath))
+		error := fmt.Errorf("No namespace set (context: %s, kubeconfig: %s)", context, kubeConfigPath)
+		return "", error
 	}
 
 	return namespace, nil
