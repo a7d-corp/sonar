@@ -69,10 +69,7 @@ func exec(ctx context.Context, k8sClientSet *kubernetes.Clientset, restClient *r
 	}
 
 	// Ensure the terminal is always restored
-	defer term.RestoreTerminal(fd, previousState)
-	if err != nil {
-		return err
-	}
+	defer term.RestoreTerminal(fd, previousState) //nolint:errcheck
 
 	err = executor.StreamWithContext(ctx, streamOpts)
 	if err != nil {
