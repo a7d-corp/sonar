@@ -24,7 +24,6 @@ import (
 	"github.com/glitchcrab/sonar/internal/app"
 	"github.com/glitchcrab/sonar/internal/config"
 	"github.com/glitchcrab/sonar/internal/k8sclient"
-	sonartypes "github.com/glitchcrab/sonar/internal/types"
 	"github.com/glitchcrab/sonar/internal/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -119,8 +118,7 @@ func runDeleteCommand(cmd *cobra.Command, args []string) error {
 	ctx := context.TODO()
 
 	// Find all Sonar deployments.
-	var discoveredDeployments []sonartypes.DiscoveredDeployment
-	discoveredDeployments, err = utils.FindSonarDeployments(k8sClientSet, ctx, a.Globals.Name, searchNamespace, searchLabels)
+	discoveredDeployments := utils.FindSonarDeployments(k8sClientSet, ctx, a.Globals.Name, searchNamespace, searchLabels)
 
 	var selectedDeploy string
 	if !skipInteractiveLookup {

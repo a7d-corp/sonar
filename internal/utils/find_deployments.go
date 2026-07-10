@@ -13,7 +13,7 @@ import (
 )
 
 // FindSonarDeployments searches for Kubernetes deployments matching the provided labels and returns a list of discovered deployments.
-func FindSonarDeployments(k8sClientSet *kubernetes.Clientset, ctx context.Context, name, namespace string, searchLabels []string) ([]sonartypes.DiscoveredDeployment, error) {
+func FindSonarDeployments(k8sClientSet *kubernetes.Clientset, ctx context.Context, name, namespace string, searchLabels []string) []sonartypes.DiscoveredDeployment {
 	// Create a label selector string from the search labels.
 	searchOpts := metav1.ListOptions{
 		LabelSelector: strings.Join(searchLabels, ","),
@@ -43,5 +43,5 @@ func FindSonarDeployments(k8sClientSet *kubernetes.Clientset, ctx context.Contex
 		os.Exit(0)
 	}
 
-	return discoveredDeployments, err
+	return discoveredDeployments
 }
