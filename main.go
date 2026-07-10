@@ -18,5 +18,6 @@ package main
 import "github.com/glitchcrab/sonar/cmd"
 
 func main() {
+	//nolint:errcheck
 	cmd.NewRootCommand().Execute()
 }
