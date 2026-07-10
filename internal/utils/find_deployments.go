@@ -22,7 +22,7 @@ func FindSonarDeployments(k8sClientSet *kubernetes.Clientset, ctx context.Contex
 	// Get matching pods
 	deployments, err := k8sClientSet.AppsV1().Deployments(namespace).List(ctx, searchOpts)
 	if err != nil {
-		log.Fatal("error listing deployments: %v", err)
+		log.Fatalf("error listing deployments: %v", err)
 	}
 
 	var discoveredDeployments []sonartypes.DiscoveredDeployment

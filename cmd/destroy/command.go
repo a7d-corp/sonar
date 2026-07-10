@@ -199,7 +199,7 @@ func runDeleteCommand(cmd *cobra.Command, args []string) error {
 	inClusterNps := []networkingv1.NetworkPolicy{}
 	nps, err := k8sClientSet.NetworkingV1().NetworkPolicies(opts.Namespace).List(ctx, listOpts)
 	if err != nil {
-		log.Warnf("%w", err)
+		log.Warnf("%v", err)
 	}
 	inClusterNps = append(inClusterNps, nps.Items...)
 
