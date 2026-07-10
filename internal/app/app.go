@@ -2,8 +2,10 @@ package app
 
 import "github.com/glitchcrab/sonar/internal/config"
 
-// appKey is a custom type to avoid potential collisions.
-const appKey contextKey = "app"
+const (
+	appKey   contextKey = "app"
+	viperKey contextKey = "viper"
+)
 
 type contextKey string
 
@@ -12,7 +14,12 @@ type App struct {
 	Globals config.Globals
 }
 
-// RetrieveContextKey returns the context key for the App.
+// RetrieveAppKey returns the context key for the App.
 func (a *App) RetrieveAppKey() contextKey {
 	return appKey
+}
+
+// RetrieveViperKey returns the context key for Viper.
+func (a *App) RetrieveViperKey() contextKey {
+	return viperKey
 }

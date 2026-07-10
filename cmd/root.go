@@ -142,7 +142,8 @@ func initRootConfig(root *cobra.Command, args []string) error {
 	ctx := context.WithValue(root.Context(), appKey, app)
 
 	// Add the Viper instance to the command's context.
-	ctx = context.WithValue(ctx, "viperKey", v)
+	viperKey := app.RetrieveViperKey()
+	ctx = context.WithValue(ctx, viperKey, v)
 
 	root.SetContext(ctx)
 
