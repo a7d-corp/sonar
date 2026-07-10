@@ -48,7 +48,7 @@ func createServiceAccount(k8sClientSet *kubernetes.Clientset, ctx context.Contex
 	if o.DryRun {
 		err = utils.PrintManifestYAML(sa)
 		if err != nil {
-			return fmt.Errorf("serviceaccount \"%s/%s\" manifest generation failed: %v\n", o.Namespace, o.Name, err)
+			return fmt.Errorf("serviceaccount \"%s/%s\" manifest generation failed: %v", o.Namespace, o.Name, err)
 		}
 	} else {
 		_, err = k8sClientSet.CoreV1().ServiceAccounts(o.Namespace).Create(ctx, sa, metav1.CreateOptions{})
@@ -56,9 +56,9 @@ func createServiceAccount(k8sClientSet *kubernetes.Clientset, ctx context.Contex
 
 	if err != nil {
 		if statusError, isStatus := err.(*errors.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {
-			return fmt.Errorf("serviceaccount \"%s/%s\" already exists\n", o.Namespace, o.Name)
+			return fmt.Errorf("serviceaccount \"%s/%s\" already exists", o.Namespace, o.Name)
 		} else if err != nil {
-			return fmt.Errorf("serviceaccount \"%s/%s\" was not created: %w\n", o.Namespace, o.Name, err)
+			return fmt.Errorf("serviceaccount \"%s/%s\" was not created: %w", o.Namespace, o.Name, err)
 		}
 	} else {
 		log.Infof("serviceaccount \"%s/%s\" created\n", o.Namespace, o.Name)

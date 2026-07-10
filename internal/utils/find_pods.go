@@ -22,7 +22,7 @@ func FindSonarPods(k8sClientSet *kubernetes.Clientset, ctx context.Context, name
 	// Get matching pods
 	pods, err := k8sClientSet.CoreV1().Pods(namespace).List(ctx, searchOpts)
 	if err != nil {
-		log.Fatal("error listing pods: %v", err)
+		log.Fatalf("error listing pods: %v", err)
 	}
 
 	var discoveredPods []sonartypes.DiscoveredPod

@@ -76,8 +76,7 @@ provided then resource names will start with 'sonar-'.
 Namespace to deploy resources to.`,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			// Validate user-prvided config.
-			var err error
-			err = initRootConfig(cmd, args)
+			err := initRootConfig(cmd, args)
 			if err != nil {
 				return err
 			} else {
@@ -143,7 +142,8 @@ func initRootConfig(root *cobra.Command, args []string) error {
 	ctx := context.WithValue(root.Context(), appKey, app)
 
 	// Add the Viper instance to the command's context.
-	ctx = context.WithValue(ctx, "viperKey", v)
+	viperKey := app.RetrieveViperKey()
+	ctx = context.WithValue(ctx, viperKey, v)
 
 	root.SetContext(ctx)
 

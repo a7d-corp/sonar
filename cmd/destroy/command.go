@@ -23,8 +23,8 @@ import (
 
 	"github.com/glitchcrab/sonar/internal/app"
 	"github.com/glitchcrab/sonar/internal/config"
-	"github.com/glitchcrab/sonar/internal/utils"
 	"github.com/glitchcrab/sonar/internal/k8sclient"
+	"github.com/glitchcrab/sonar/internal/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	networkingv1 "k8s.io/api/networking/v1"
@@ -118,7 +118,7 @@ func runDeleteCommand(cmd *cobra.Command, args []string) error {
 	ctx := context.TODO()
 
 	// Find all Sonar deployments.
-	discoveredDeployments, err := utils.FindSonarDeployments(k8sClientSet, ctx, a.Globals.Name, searchNamespace, searchLabels)
+	discoveredDeployments := utils.FindSonarDeployments(k8sClientSet, ctx, a.Globals.Name, searchNamespace, searchLabels)
 
 	var selectedDeploy string
 	if !skipInteractiveLookup {
@@ -197,7 +197,7 @@ func runDeleteCommand(cmd *cobra.Command, args []string) error {
 	inClusterNps := []networkingv1.NetworkPolicy{}
 	nps, err := k8sClientSet.NetworkingV1().NetworkPolicies(opts.Namespace).List(ctx, listOpts)
 	if err != nil {
-		log.Warnf("%w", err)
+		log.Warnf("%v", err)
 	}
 	inClusterNps = append(inClusterNps, nps.Items...)
 
