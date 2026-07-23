@@ -5,6 +5,7 @@ go 1.26.0
 toolchain go1.26.1
 
 require (
+	github.com/go-test/deep v1.1.1
 	github.com/manifoldco/promptui v0.9.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/moby/term v0.5.2
