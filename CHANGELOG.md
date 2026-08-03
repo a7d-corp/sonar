@@ -5,7 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/a7d-corp/sonar/compare/v1.9.2...HEAD)
+## [Unreleased](https://github.com/a7d-corp/sonar/compare/v1.9.3...HEAD)
+
+## [v1.9.3](https://github.com/a7d-corp/sonar/compare/v1.9.2...v1.9.3) - 2026-08-03
+
+### Changes
+
+- ci: remove semantic commit configuration as it now the default @glitchcrab (#423)
+- ci: update kubernetes monorepo to v0.36.3 @[renovate[bot]](https://github.com/apps/renovate) (#422)
+- feat: add tests for config validation @glitchcrab (#420)
+- ci: renovate: ensure semantic commits are enabled @glitchcrab (#421)
+- chore: update kubernetes monorepo to v0.36.2 @[renovate[bot]](https://github.com/apps/renovate) (#407)
+- chore: update actions/setup-go action to v7 @[renovate[bot]](https://github.com/apps/renovate) (#419)
+- chore: update PKGBUILD for v1.9.2 @glitchcrab-bot (#418)
 
 ## [v1.9.2](https://github.com/a7d-corp/sonar/compare/v1.9.1...v1.9.2) - 2026-07-11
 
