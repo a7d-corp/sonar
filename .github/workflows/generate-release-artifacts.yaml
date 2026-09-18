@@ -6,7 +6,7 @@ on:
 jobs:
   debug_info:
     name: Debug info
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Print github context JSON
         run: |
@@ -16,7 +16,7 @@ jobs:
 
   gather_facts:
     name: Gather facts
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     outputs:
       ref_version: ${{ steps.ref_version.outputs.refversion }}
       version: ${{ steps.get_version.outputs.version }}
@@ -32,7 +32,7 @@ jobs:
 
   create_and_upload_build_artifacts:
     name: Create and upload build artifacts
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
