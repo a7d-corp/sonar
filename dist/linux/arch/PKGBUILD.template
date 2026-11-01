@@ -1,0 +1,24 @@
+# Maintainer: Simon Weald <simon[at]simonweald[dot]com>
+
+pkgname=sonar-bin
+_srcname=sonar
+pkgdesc="Sonar deploys a debugging container to a Kubernetes cluster."
+pkgver=${PKG_VER}
+pkgrel=1
+provides=('sonar')
+arch=('x86_64')
+url="https://github.com/glitchcrab/sonar"
+license=('apache')
+source=("${_srcname}-v${pkgver}.tar.gz::${url}/releases/download/v${pkgver}/${_srcname}-v${pkgver}-linux-amd64.tar.gz")
+sha256sums=('${BUILD_ARTIFACT_SHA256SUM}')
+
+package() {
+    cd ${srcdir}
+    tar -xzf ${_srcname}-v${pkgver}.tar.gz
+    install -Dm755 "${srcdir}/${_srcname}" "${pkgdir}/usr/bin/${_srcname}"
+
+    "$pkgdir/usr/bin/${_srcname}" completion bash | install -Dm644 /dev/stdin "$pkgdir/usr/share/bash-completion/completions/${_srcname}"
+    "$pkgdir/usr/bin/${_srcname}" completion zsh | install -Dm644 /dev/stdin "$pkgdir/usr/share/zsh/site-functions/_${_srcname}"
+    "$pkgdir/usr/bin/${_srcname}" completion fish | install -Dm644 /dev/stdin "$pkgdir/usr/share/fish/vendor_completions.d/${_srcname}.fish"
+}
+
