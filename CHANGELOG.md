@@ -5,7 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/a7d-corp/sonar/compare/v1.9.3...HEAD)
+## [Unreleased](https://github.com/a7d-corp/sonar/compare/v1.10.0...HEAD)
+
+## [v1.10.0](https://github.com/a7d-corp/sonar/compare/v1.9.3...v1.10.0) - 2026-11-06
+
+### Changes
+
+- ci: bump publish workflow to pull in https://github.com/a7d-corp/github-workflows/pull/2 @glitchcrab (#435)
+- ci: update module github.com/go-test/deep to v1.1.2 @[renovate[bot]](https://github.com/apps/renovate) (#432)
+- ci: update module github.com/sirupsen/logrus to v1.10.2 @[renovate[bot]](https://github.com/apps/renovate) (#430)
+- ci: update kubernetes monorepo to v0.37.2 @[renovate[bot]](https://github.com/apps/renovate) (#429)
+- feat(ci): add workflow to build and sync package to repo @glitchcrab (#434)
+- ci: add PKGBUILD template @glitchcrab (#433)
+- ci: update dependency ubuntu to v26 @[renovate[bot]](https://github.com/apps/renovate) (#431)
+- ci: update module github.com/sirupsen/logrus to v1.10.1 @[renovate[bot]](https://github.com/apps/renovate) (#426)
+- ci: update kubernetes monorepo to v0.36.4 @[renovate[bot]](https://github.com/apps/renovate) (#427)
+- ci: update module github.com/sirupsen/logrus to v1.10.0 @[renovate[bot]](https://github.com/apps/renovate) (#425)
+- chore: update PKGBUILD for v1.9.3 @glitchcrab-bot (#424)
 
 ## [v1.9.3](https://github.com/a7d-corp/sonar/compare/v1.9.2...v1.9.3) - 2026-08-03
 
