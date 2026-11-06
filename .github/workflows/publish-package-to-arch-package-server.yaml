@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   arch-package-and-push:
-    uses: a7d-corp/github-workflows/.github/workflows/update-arch-package-repo-with-build-artifact.yaml@11437490b9159e5673c19448c55b5afd3ba169b8
+    uses: a7d-corp/github-workflows/.github/workflows/update-arch-package-repo-with-build-artifact.yaml@37872674a91db649bc2d274702bc880b50cbdcc7
     with:
       BUILD_ARTIFACT: ${{ vars.BUILD_ARTIFACT }}
       PKGBUILD_TEMPLATE: "dist/linux/arch/PKGBUILD.template"
