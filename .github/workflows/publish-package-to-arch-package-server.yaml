@@ -1,0 +1,32 @@
+name: Create Arch package and push
+
+on:
+  release:
+    types: [released]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag to build from
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  arch-package-and-push:
+    uses: a7d-corp/github-workflows/.github/workflows/update-arch-package-repo-with-build-artifact.yaml@11437490b9159e5673c19448c55b5afd3ba169b8
+    with:
+      BUILD_ARTIFACT: ${{ vars.BUILD_ARTIFACT }}
+      PKGBUILD_TEMPLATE: "dist/linux/arch/PKGBUILD.template"
+      TS_TAG: ${{ vars.TS_TAG }}
+      RELEASE_TAG: ${{ vars.RELEASE_TAG || inputs.tag || github.event.release.tag_name }}
+    secrets:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_HOST_KNOWN_HOSTS: ${{ secrets.SSH_HOST_KNOWN_HOSTS }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      SSH_USER_PRIVATE_KEY: ${{ secrets.SSH_USER_PRIVATE_KEY }}
+      PGP_SIGNING_KEY_CONTENT: ${{ secrets.PGP_SIGNING_KEY_CONTENT }}
+      PGP_SIGNING_KEY_ID: ${{ secrets.PGP_SIGNING_KEY_ID }}
+      TS_OAUTH_CLIENT_ID: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+      TS_OAUTH_CLIENT_SECRET: ${{ secrets.TS_OAUTH_CLIENT_SECRET }}
