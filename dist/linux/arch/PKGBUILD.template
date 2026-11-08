@@ -11,6 +11,7 @@ url="https://github.com/glitchcrab/sonar"
 license=('apache')
 source=("${_srcname}-v${pkgver}.tar.gz::${url}/releases/download/v${pkgver}/${_srcname}-v${pkgver}-linux-amd64.tar.gz")
 sha256sums=('${BUILD_ARTIFACT_SHA256}')
+options=('!debug')
 
 package() {
     cd ${srcdir}
